@@ -338,18 +338,25 @@
     }
     .toast.show{ opacity: 1; }
 
-    /* ====== ここが今回の“必要最小限の変更” ======
-       入力シートだけ文字を小さくして全体を見やすくする
-       （コピーシートは変更しない）
+    /* ====== 変更点(2つ) ======
+       1) 入力シートの文字をさらに小さく
+       2) IDは数字以外もOK（JS側で処理変更）
     */
     .view-input .gridRow,
     .view-input .gridHeader{
-      font-size: 15px; /* ←入力シートだけ小さく */
+      font-size: 13px; /* ←前より小さく（入力シートだけ） */
     }
     .view-input .cellInput{
-      font-size: 15px; /* ←入力欄も小さく */
+      font-size: 13px; /* ←入力欄も小さく */
     }
-    /* コピーシートは元のまま（大きめ） */
+    .view-input .pasteBox{
+      font-size: 13px; /* ←貼り付け欄も小さく */
+    }
+    .view-input .pasteActions .btn{
+      font-size: 14px; /* ←ボタン文字も少しだけ小さく */
+    }
+
+    /* コピーシートはそのまま */
     .view-copy .gridRow,
     .view-copy .gridHeader{
       font-size: 18px;
@@ -493,8 +500,6 @@
       showToast._t = setTimeout(()=>toast.classList.remove("show"), 900);
     }
 
-    function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-
     function clampRows(){
       if(rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
     }
@@ -506,9 +511,7 @@
     }
 
     function snapshot(){
-      // 履歴に積む（深いコピー）
       const snap = JSON.stringify(rows);
-      // 同一なら積まない（軽く）
       if(histIdx >= 0 && history[histIdx] === snap) return;
       history = history.slice(0, histIdx + 1);
       history.push(snap);
@@ -536,7 +539,6 @@
     }
 
     function toTSV(){
-      // ID \t PIN
       const lines = rows
         .filter(r => (r.id && r.id.trim()) || (r.pin && r.pin.trim()))
         .map(r => `${r.id ?? ""}\t${r.pin ?? ""}`);
@@ -548,7 +550,6 @@
         await navigator.clipboard.writeText(text);
         return true;
       }catch(e){
-        // iOS/Safariで失敗する場合のフォールバック
         try{
           const ta = document.createElement("textarea");
           ta.value = text;
@@ -574,8 +575,6 @@
     }
 
     function colorForCount(n){
-      // 数字によって色を変える（薄い大文字用）
-      // 0.. -> hue rotate
       const hue = (n * 37) % 360;
       const a = getComputedStyle(document.documentElement).getPropertyValue("--ghostBaseAlpha").trim() || "0.22";
       return `hsla(${hue}, 70%, 45%, ${a})`;
@@ -602,7 +601,6 @@
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
 
-        // #列：丸バッジ廃止（必要最小限の変更）
         const num = document.createElement("div");
         num.className = "numCell";
 
@@ -618,20 +616,15 @@
         num.appendChild(ghost);
         num.appendChild(front);
 
-        // ID（13桁・数字のみ）
+        // ID（数値以外もOK / 長さは13に制限）
         const idWrap = document.createElement("div");
         idWrap.className = "cellWrap";
         const idInput = document.createElement("input");
         idInput.className = "cellInput";
         idInput.value = r.id ?? "";
-        idInput.placeholder = "";
         idInput.autocomplete = "off";
         idInput.spellcheck = false;
-
-        // ★今回追加：ID=13桁（数字のみ）
-        idInput.maxLength = 13;
-        idInput.inputMode = "numeric";
-        idInput.pattern = "\\d{0,13}";
+        idInput.maxLength = 13;   // ←長さは維持（必要なら後で変更可）
 
         const idCopy = document.createElement("button");
         idCopy.type = "button";
@@ -639,17 +632,14 @@
         idCopy.textContent = "📋";
         idCopy.title = "IDをコピー";
 
-        // PIN（8桁：文字種はそのまま、長さだけ制限）
+        // PIN（8桁）
         const pinWrap = document.createElement("div");
         pinWrap.className = "cellWrap";
         const pinInput = document.createElement("input");
         pinInput.className = "cellInput";
         pinInput.value = r.pin ?? "";
-        pinInput.placeholder = "";
         pinInput.autocomplete = "off";
         pinInput.spellcheck = false;
-
-        // ★今回追加：PIN=8桁
         pinInput.maxLength = 8;
 
         const pinCopy = document.createElement("button");
@@ -658,11 +648,9 @@
         pinCopy.textContent = "📋";
         pinCopy.title = "PINをコピー";
 
-        // ---- “編集時に全選択”の挙動（既存機能は維持しつつ強める） ----
-        // 1回目のタップで全選択しやすくするため、pointerdown と focus の両方で select を呼ぶ
+        // “編集時に全選択”
         function enableAutoSelectAll(inp){
-          inp.addEventListener("pointerdown", (e)=>{
-            // iOSで「1回目タップ→カーソルだけ」になりがちなので、次フレームでselect
+          inp.addEventListener("pointerdown", ()=>{
             requestAnimationFrame(()=>{
               try{ inp.focus({preventScroll:true}); }catch(_){}
               setTimeout(()=>{ try{ inp.select(); }catch(_){} }, 0);
@@ -676,29 +664,22 @@
         enableAutoSelectAll(idInput);
         enableAutoSelectAll(pinInput);
 
-        // ---- ID編集カウント（値が変わった時だけ +1。同じ値ならカウントしない） ----
+        // ID編集カウント（値が変わった時だけ +1 / 同じ値はカウントしない）
         let idStartValue = r.id ?? "";
         idInput.addEventListener("focus", ()=>{
           idStartValue = idInput.value ?? "";
         });
 
-        // IDは数字以外を即除去（13桁のみ）
+        // ★変更：IDは「数字以外削除」しない（即反映のみ）
         idInput.addEventListener("input", ()=>{
-          const before = idInput.value;
-          const after = before.replace(/\D/g,"").slice(0,13);
-          if(before !== after) idInput.value = after;
-          // rowsへは即反映してレスポンス良く
-          r.id = idInput.value;
+          r.id = (idInput.value ?? "").slice(0, 13);
         });
 
         idInput.addEventListener("blur", ()=>{
-          const newVal = (idInput.value ?? "");
-          // rowsへ確定
+          const newVal = (idInput.value ?? "").slice(0, 13);
           r.id = newVal;
 
-          // 変化判定：フォーカス時の値と違うならカウント
           if(newVal !== idStartValue){
-            // 「同じ値で戻った」場合はカウントしないように、最終カウント値も見る
             if((r.lastCountedId ?? "") !== newVal){
               r.editCount = (r.editCount ?? 0) + 1;
               r.lastCountedId = newVal;
@@ -713,7 +694,7 @@
           }
         });
 
-        // PINはそのまま、長さだけ制限しつつ即反映
+        // PIN（8桁）
         pinInput.addEventListener("input", ()=>{
           r.pin = (pinInput.value ?? "").slice(0,8);
         });
@@ -726,7 +707,7 @@
           countCopy.textContent = String(nonEmptyCount());
         });
 
-        // 入力シートのコピーボタン（入力側だけ必要）
+        // 入力シートのコピーボタン
         idCopy.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
@@ -763,7 +744,6 @@
         .filter(x => (x.r.id && x.r.id.trim()) || (x.r.pin && x.r.pin.trim()));
 
       if(filtered.length === 0){
-        // 空でも見た目崩れないように1行だけ出す（コピーできない）
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
         rowEl.innerHTML = `
@@ -776,7 +756,7 @@
       }
 
       for(let i=0;i<filtered.length;i++){
-        const {r,idx} = filtered[i];
+        const {r} = filtered[i];
 
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
@@ -804,7 +784,6 @@
         pinCell.className = "tapCell";
         pinCell.textContent = r.pin ?? "";
 
-        // コピーシートは「セルタップでコピー」だけ（コピーボタン無し）
         idCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
@@ -835,7 +814,6 @@
       const lines = (text ?? "").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
       const out = [];
       for(const line of lines){
-        // タブ or 複数空白で区切る
         const parts = line.split(/\s+/);
         if(parts.length === 1){
           out.push({id: parts[0], pin:""});
@@ -854,17 +832,16 @@
         return;
       }
 
-      // rowsへ上書き（既存行は維持しつつ先頭から反映）
       for(let i=0;i<pasted.length;i++){
         ensureRow(i);
-        // IDは数字13桁に整形
-        const id = (pasted[i].id ?? "").replace(/\D/g,"").slice(0,13);
-        const pin = (pasted[i].pin ?? "").slice(0,8);
+
+        // ★変更：IDはそのまま（数値以外もOK）、長さだけ 13 に制限
+        const id  = (pasted[i].id ?? "").slice(0, 13);
+        const pin = (pasted[i].pin ?? "").slice(0, 8);
 
         rows[i].id = id;
         rows[i].pin = pin;
 
-        // 初期化的に lastCountedId を揃えておく（不要なカウント防止）
         if((rows[i].lastCountedId ?? "") === ""){
           rows[i].lastCountedId = id;
         }
@@ -946,7 +923,6 @@
      * 初期化
      ***************/
     function init(){
-      // 初期はストレージがあれば読み込み
       const s = localStorage.getItem(STORAGE_KEY);
       if(s){
         try{
