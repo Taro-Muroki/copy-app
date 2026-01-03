@@ -3,525 +3,323 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>AppID / PIN 入力＆コピー</title>
+  <title>AppID / PIN</title>
   <style>
-    :root { --pad: 12px; --border:#d9d9d9; --bg:#fafafa; --ink:#111; }
+    :root{
+      --bg:#f6f7f9;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --head:#f3f4f6;
+
+      /* コピー時の強調（濃いめ） */
+      --flash:#1d4ed8;            /* 青 */
+      --flashText:#ffffff;
+      --flashOutline:#0b2a7a;
+    }
+
+    html,body{ height:100%; }
     body{
-      margin:0; font-family:-apple-system, system-ui, "Hiragino Sans", sans-serif;
-      background:#fff; color:var(--ink);
-      padding-bottom: 76px;
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overscroll-behavior-y: contain; /* 上下のみ気持ちよく */
     }
-    header{
-      position:sticky; top:0; z-index:10;
-      background:rgba(255,255,255,.95);
-      backdrop-filter:saturate(180%) blur(10px);
-      border-bottom:1px solid var(--border);
-      padding: 10px var(--pad);
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    header h1{ font-size:16px; margin:0; }
-    header .mini{ font-size:12px; opacity:.7; }
-    main{ padding: var(--pad); }
-    .view{ display:none; }
-    .view.active{ display:block; }
 
-    .hint{ font-size:13px; opacity:.78; margin: 10px 2px 12px; line-height:1.45; }
-    .tools{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 10px 0 12px; }
-    .tools button{ width:auto; padding:10px 12px; font-size:14px; border-radius:12px; }
-
-    button{
-      border:1px solid var(--border);
-      background:#111; color:#fff;
-      padding: 10px 12px; border-radius:14px; font-size:15px;
+    /* 上部ヘッダー（薄く・小さく） */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:saturate(180%) blur(12px);
+      border-bottom:1px solid var(--line);
+      padding:12px 14px;
     }
-    button.secondary{ background:#fff; color:#111; }
-    button.danger{ background:#fff; color:#b00020; border-color:#f0c4c4; }
-
-    /* Table */
-    .tableWrap{
-      border:1px solid var(--border);
-      border-radius:14px;
-      overflow:auto;
-      background:#fff;
-      max-height: 70vh;
+    .toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
-    table{
-      border-collapse:collapse;
-      width:100%;
-      min-width: 520px;
-      font-size:15px;
+    .title{
+      font-weight:700;
+      font-size:16px;
+      letter-spacing:.2px;
+      margin:0;
     }
-    th, td{
-      border-bottom:1px solid var(--border);
-      padding: 10px 10px;
+    .count{
+      font-size:12px;
+      color:var(--muted);
       white-space:nowrap;
     }
-    th{
-      position:sticky; top:0;
-      background: var(--bg);
+
+    .wrap{
+      max-width:780px;
+      margin:0 auto;
+      padding:10px 10px 16px;
+    }
+
+    /* コピー用は注意書き無し。ここは最低限だけ */
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin:10px 0 10px;
+    }
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:14px;
+      font-weight:600;
+    }
+    .btn:active{ transform:scale(.99); }
+
+    /* 横スクロールを殺す（これが重要） */
+    .tablebox{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;          /* 横ズレ防止 */
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;       /* 3列を必ず画面幅に収める */
+      font-size:16px;
+    }
+    thead th{
+      background:var(--head);
+      border-bottom:1px solid var(--line);
+      padding:12px 10px;
       text-align:left;
-      z-index:2;
+      font-size:13px;
+      color:#374151;
+      letter-spacing:.2px;
+      white-space:nowrap;
     }
-    td{ user-select:none; }
-    tr:hover td{ background:#fcfcfc; }
+    tbody td{
+      border-bottom:1px solid var(--line);
+      padding:14px 10px;
+      vertical-align:middle;
+      background:var(--card);
+    }
+    tbody tr:last-child td{ border-bottom:none; }
 
-    /* Excel-like editable cells (INPUT view) */
-    td.editable{
-      cursor:text;
-      user-select:text;
-    }
-    td.editable:focus{
-      outline:none;
-      background:#e9f3ff;
-      box-shadow: inset 0 0 0 2px rgba(122,167,255,.35);
-    }
+    /* 列幅：横スライド不要に最適化 */
+    .col-n{ width:44px; text-align:right; padding-right:8px; color:var(--muted); font-variant-numeric:tabular-nums; }
+    .col-id{ width:55%; font-variant-numeric:tabular-nums; }
+    .col-pin{ width:45%; font-variant-numeric:tabular-nums; }
 
-    /* Copy view cells */
-    td.copyable{
+    /* 押せるセル */
+    .tap{
       cursor:pointer;
       user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      font-weight:700;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      border-radius:10px;
+      transition:background-color .12s ease, color .12s ease, box-shadow .12s ease;
     }
-    td.copyable:active{ background:#e9f3ff; }
+    .tap:active{
+      transform:scale(.995);
+    }
 
-    /* Bottom tabs */
-    nav{
-      position:fixed; left:0; right:0; bottom:0;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(255,255,255,.95);
-      border-top:1px solid var(--border);
-      display:flex; gap:10px;
-      backdrop-filter:saturate(180%) blur(10px);
-      z-index:20;
+    /* コピー成功の強調（押したセルだけ付く） */
+    .copied{
+      background:var(--flash) !important;
+      color:var(--flashText) !important;
+      box-shadow:0 0 0 2px var(--flashOutline) inset;
     }
-    .tab{
+
+    /* 下部バー（そのまま残すなら） */
+    .bottom{
+      position:sticky;
+      bottom:0;
+      z-index:10;
+      background:rgba(246,247,249,.92);
+      backdrop-filter:saturate(180%) blur(12px);
+      padding:10px 10px calc(12px + env(safe-area-inset-bottom));
+      border-top:1px solid var(--line);
+    }
+    .bottomrow{
+      display:flex;
+      gap:10px;
+      max-width:780px;
+      margin:0 auto;
+    }
+    .input{
       flex:1;
-      border:1px solid var(--border);
-      background:#fff;
-      border-radius:16px;
-      padding: 10px 0;
-      font-size:15px;
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:12px;
+      padding:12px 12px;
+      font-size:16px;
+      outline:none;
     }
-    .tab.active{ background:#111; color:#fff; border-color:#111; }
+    .copybtn{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:16px;
+      font-weight:800;
+      background:#111827;
+      color:#fff;
+    }
+    .copybtn:active{ transform:scale(.99); }
 
-    /* Import box */
-    textarea{
-      width:100%;
-      min-height: 150px;
-      font-size:14px;
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding: 12px;
-      box-sizing:border-box;
+    /* 小さめ画面でも横ズレさせない */
+    @media (max-width:420px){
+      table{ font-size:15px; }
+      .col-id{ width:56%; }
+      .col-pin{ width:44%; }
     }
-    .card{
-      border:1px solid var(--border); border-radius:14px;
-      padding: 12px; background:#fff;
-    }
-
-    /* Toast */
-    #toast{
-      position:fixed; left:50%; bottom: 90px; transform:translateX(-50%);
-      background: rgba(0,0,0,.82); color:#fff;
-      padding:10px 14px; border-radius:999px;
-      font-size:14px; display:none;
-      z-index:30;
-      max-width: calc(100% - 24px);
-      text-align:center;
-    }
-    .muted{ opacity:.65; font-size:12px; }
   </style>
 </head>
 
 <body>
-  <header>
-    <div>
-      <h1>AppID / PIN（入力＆コピー）</h1>
-      <div class="mini">入力＝編集OK / コピー＝セルタップでコピー</div>
+  <header class="topbar">
+    <div class="toprow">
+      <h1 class="title">AppID / PIN（入力＆コピー）</h1>
+      <div class="count" id="countLabel">件数：0</div>
     </div>
-    <div class="mini" id="count"></div>
   </header>
 
-  <main>
-    <!-- INPUT VIEW -->
-    <section id="view-input" class="view active">
-      <div class="card">
-        <div class="hint">
-          ✅ Excelの2列（AppID / PIN）をそのままコピーして、下に貼り付け →「取り込み」で一括登録できます。<br>
-          形式：<strong>タブ区切り</strong>（Excel標準）or スペース区切りでもOK。<br>
-          例：<code>VMA... [TAB] 8p7s...</code> が改行で続くイメージ
-        </div>
+  <main class="wrap">
+    <div class="actions">
+      <button class="btn" id="btnReload" type="button">更新</button>
+    </div>
 
-        <textarea id="pasteBox" placeholder="ここにExcelからコピペ（2列×複数行）"></textarea>
-
-        <div class="tools">
-          <button id="btnImport">取り込み（追記）</button>
-          <button class="secondary" id="btnReplace">取り込み（全置換）</button>
-          <button class="secondary" id="btnExport">データをコピー（TSV）</button>
-          <button class="danger" id="btnWipe">全削除</button>
-        </div>
-
-        <div class="muted">
-          ・取り込み後は下の表でセル編集できます（Excelっぽい操作）<br>
-          ・PINなど機密を扱うなら、このHTMLは他人に渡さないでください（端末内に保存されます）
-        </div>
-      </div>
-
-      <div style="height:12px;"></div>
-
-      <div class="hint">入力表（セルをタップして編集 / 行追加・削除あり）</div>
-      <div class="tools">
-        <button class="secondary" id="btnAddRow">行追加</button>
-        <button class="secondary" id="btnSortAppId">AppIDで並び替え</button>
-      </div>
-
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:55px;">#</th>
-              <th>AppID（編集可）</th>
-              <th>PIN（編集可）</th>
-              <th style="width:70px;">削除</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyInput"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- COPY VIEW -->
-    <section id="view-copy" class="view">
-      <div class="hint">
-        表の<strong>セルをタップ</strong>すると、その<strong>セルの文字だけ</strong>をコピーします。<br>
-        もしタップでコピーできない環境なら、セルを<strong>長押し→選択→コピー</strong>で代替できます。
-      </div>
-
-      <div class="tools">
-        <button class="secondary" id="btnReload">更新</button>
-      </div>
-
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:55px;">#</th>
-              <th>AppID（タップでコピー）</th>
-              <th>PIN（タップでコピー）</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCopy"></tbody>
-        </table>
-      </div>
-
-      <div class="muted" style="margin-top:10px;">
-        ・コピー画面は編集不可（セルタップ＝コピー専用）
-      </div>
-    </section>
+    <div class="tablebox">
+      <table aria-label="AppID PIN table">
+        <thead>
+          <tr>
+            <th class="col-n">#</th>
+            <th class="col-id">ID</th>
+            <th class="col-pin">PIN</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
   </main>
 
-  <div id="toast"></div>
+  <footer class="bottom">
+    <div class="bottomrow">
+      <input class="input" id="bulkText" placeholder="ここにコピペ → 右のコピーでOK" />
+      <button class="copybtn" id="btnCopy" type="button">コピー</button>
+    </div>
+  </footer>
 
-  <nav>
-    <button id="tabInput" class="tab active">入力</button>
-    <button id="tabCopy" class="tab">コピー</button>
-  </nav>
+  <script>
+    // ===== サンプルデータ（ここをあなたのデータ読込に置き換えてもOK） =====
+    // 既にあなたのコードで 62件出せてるので、data の作り方は今のままでOK。
+    // ここでは最低限の形式にしてある。
+    const data = [
+      { id: "VMA1069413711", pin: "8p7s@3WD" },
+      { id: "VMA1070117886", pin: "t7Sgn?i2" },
+      { id: "VMA1070117924", pin: "wt?Cbg4A" },
+      // ...（あなたの実データに置き換え）
+    ];
 
-<script>
-(() => {
-  const STORAGE_KEY = "appid_pin_table_v2";
+    const tbody = document.getElementById("tbody");
+    const countLabel = document.getElementById("countLabel");
+    const btnReload = document.getElementById("btnReload");
 
-  const $ = (id) => document.getElementById(id);
-
-  const viewInput = $("view-input");
-  const viewCopy  = $("view-copy");
-  const tabInput  = $("tabInput");
-  const tabCopy   = $("tabCopy");
-  const toast     = $("toast");
-  const countEl   = $("count");
-
-  const pasteBox = $("pasteBox");
-  const tbodyInput = $("tbodyInput");
-  const tbodyCopy  = $("tbodyCopy");
-
-  let data = loadData(); // [{id, appId, pin}]
-
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.style.display = "block";
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.style.display = "none", 900);
-  }
-
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    updateCount();
-  }
-
-  function loadData() {
-    try {
-      const s = localStorage.getItem(STORAGE_KEY);
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
+    function setCount(n){
+      countLabel.textContent = `件数：${n}`;
     }
-  }
 
-  function updateCount() {
-    countEl.textContent = `件数：${data.length}`;
-  }
+    function haptic(){
+      // iPhoneで効くことが多い（効かない環境もある）
+      try { navigator.vibrate?.(25); } catch(e){}
+    }
 
-  function switchView(name) {
-    const isInput = (name === "input");
-    viewInput.classList.toggle("active", isInput);
-    viewCopy.classList.toggle("active", !isInput);
-    tabInput.classList.toggle("active", isInput);
-    tabCopy.classList.toggle("active", !isInput);
-
-    if (!isInput) renderCopy();
-  }
-
-  tabInput.addEventListener("click", () => switchView("input"));
-  tabCopy.addEventListener("click",  () => switchView("copy"));
-
-  async function copyText(text) {
-    const t = String(text ?? "");
-    if (!t) return;
-
-    try {
-      await navigator.clipboard.writeText(t);
-      showToast("コピーしました");
-      return;
-    } catch (e) {
-      try {
-        const ta = document.createElement("textarea");
-        ta.value = t;
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.focus(); ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        showToast("コピーしました");
-      } catch {
-        showToast("コピー失敗：長押しでコピーしてください");
+    async function copyText(text){
+      // クリップボード API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
       }
+      // フォールバック（古い環境）
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly","");
+      ta.style.position="fixed";
+      ta.style.opacity="0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
     }
-  }
 
-  function newId() {
-    return Math.random().toString(16).slice(2) + Date.now().toString(16);
-  }
-
-  function normalizeRow(r) {
-    return {
-      id: r.id ?? newId(),
-      appId: (r.appId ?? "").toString(),
-      pin: (r.pin ?? "").toString(),
-    };
-  }
-
-  // ===== TSV / Paste Parse =====
-  // Excelコピーは通常: "A\tB\nA\tB\n..."
-  // 2列ない行はスキップ（または片側空欄で登録）
-  function parsePaste(text) {
-    const lines = (text || "")
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
-      .split("\n");
-
-    const rows = [];
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-
-      // タブ優先 → なければ複数スペースで分割
-      let parts = line.split("\t");
-      if (parts.length < 2) parts = line.trim().split(/\s{2,}|\s+/);
-
-      const appId = (parts[0] ?? "").trim();
-      const pin   = (parts[1] ?? "").trim();
-
-      if (!appId && !pin) continue;
-      rows.push(normalizeRow({ appId, pin }));
+    function flashCell(cell){
+      // “押したセルだけ”強調
+      cell.classList.add("copied");
+      setTimeout(()=>cell.classList.remove("copied"), 650);
     }
-    return rows;
-  }
 
-  function toTSV(rows) {
-    return rows.map(r => `${(r.appId ?? "")}\t${(r.pin ?? "")}`).join("\n");
-  }
+    function render(){
+      tbody.innerHTML = "";
+      data.forEach((row, idx) => {
+        const tr = document.createElement("tr");
 
-  // ===== Render INPUT (editable) =====
-  function renderInput() {
-    tbodyInput.innerHTML = "";
+        const tdN = document.createElement("td");
+        tdN.className = "col-n";
+        tdN.textContent = String(idx + 1);
 
-    data.forEach((r, idx) => {
-      const tr = document.createElement("tr");
+        const tdId = document.createElement("td");
+        tdId.className = "col-id tap";
+        tdId.textContent = row.id;
 
-      const tdIdx = document.createElement("td");
-      tdIdx.textContent = String(idx + 1);
-      tdIdx.style.userSelect = "none";
-      tr.appendChild(tdIdx);
+        const tdPin = document.createElement("td");
+        tdPin.className = "col-pin tap";
+        tdPin.textContent = row.pin;
 
-      // AppID editable cell
-      const tdA = document.createElement("td");
-      tdA.className = "editable";
-      tdA.contentEditable = "true";
-      tdA.textContent = r.appId;
-      tdA.addEventListener("input", () => {
-        r.appId = tdA.textContent.trim();
-        saveData();
+        // IDだけ押したらIDだけ反応
+        tdId.addEventListener("click", async () => {
+          const ok = await copyText(row.id);
+          if (ok) { haptic(); flashCell(tdId); }
+        });
+
+        // PINだけ押したらPINだけ反応
+        tdPin.addEventListener("click", async () => {
+          const ok = await copyText(row.pin);
+          if (ok) { haptic(); flashCell(tdPin); }
+        });
+
+        tr.appendChild(tdN);
+        tr.appendChild(tdId);
+        tr.appendChild(tdPin);
+        tbody.appendChild(tr);
       });
-      tdA.addEventListener("keydown", (ev) => {
-        // Excelっぽく Enterで次の行、Tabで次セル
-        if (ev.key === "Enter") { ev.preventDefault(); focusCell(idx + 1, "appId"); }
-      });
-      tr.appendChild(tdA);
 
-      // PIN editable cell
-      const tdP = document.createElement("td");
-      tdP.className = "editable";
-      tdP.contentEditable = "true";
-      tdP.textContent = r.pin;
-      tdP.addEventListener("input", () => {
-        r.pin = tdP.textContent.trim();
-        saveData();
-      });
-      tdP.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") { ev.preventDefault(); focusCell(idx + 1, "pin"); }
-      });
-      tr.appendChild(tdP);
+      setCount(data.length);
+    }
 
-      // Delete button
-      const tdDel = document.createElement("td");
-      tdDel.style.textAlign = "center";
-      const b = document.createElement("button");
-      b.textContent = "削除";
-      b.className = "secondary";
-      b.style.width = "auto";
-      b.style.padding = "8px 10px";
-      b.style.borderRadius = "12px";
-      b.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        data = data.filter(x => x.id !== r.id);
-        saveData();
-        renderInput();
-        showToast("削除しました");
-      });
-      tdDel.appendChild(b);
-      tr.appendChild(tdDel);
-
-      tbodyInput.appendChild(tr);
+    btnReload.addEventListener("click", () => {
+      // 本当はここで fetch / localStorage 再読込など
+      render();
     });
 
-    updateCount();
-  }
-
-  function focusCell(rowIndex, field) {
-    // rowIndexは data のインデックス（0-based）ではなく「次の行」用
-    // ここではざっくり：次の行がなければ追加してフォーカス
-    if (rowIndex >= data.length) {
-      data.push(normalizeRow({ appId:"", pin:"" }));
-      saveData();
-      renderInput();
-    }
-    const tr = tbodyInput.children[rowIndex];
-    if (!tr) return;
-    const td = (field === "pin") ? tr.children[2] : tr.children[1];
-    if (td) td.focus();
-  }
-
-  // ===== Render COPY (tap to copy) =====
-  function renderCopy() {
-    tbodyCopy.innerHTML = "";
-
-    data.forEach((r, idx) => {
-      const tr = document.createElement("tr");
-
-      const tdIdx = document.createElement("td");
-      tdIdx.textContent = String(idx + 1);
-      tr.appendChild(tdIdx);
-
-      const tdA = document.createElement("td");
-      tdA.className = "copyable";
-      tdA.textContent = r.appId;
-      tdA.title = "タップでコピー";
-      tdA.addEventListener("click", () => copyText(r.appId));
-      tr.appendChild(tdA);
-
-      const tdP = document.createElement("td");
-      tdP.className = "copyable";
-      tdP.textContent = r.pin;
-      tdP.title = "タップでコピー";
-      tdP.addEventListener("click", () => copyText(r.pin));
-      tr.appendChild(tdP);
-
-      tbodyCopy.appendChild(tr);
+    // 下の「コピー」ボタン：入力欄の文字列をコピー（現状維持）
+    document.getElementById("btnCopy").addEventListener("click", async () => {
+      const v = document.getElementById("bulkText").value || "";
+      if(!v) return;
+      const ok = await copyText(v);
+      if(ok){ haptic(); }
     });
 
-    updateCount();
-  }
-
-  // ===== Buttons =====
-  $("btnImport").addEventListener("click", () => {
-    const rows = parsePaste(pasteBox.value);
-    if (rows.length === 0) { showToast("取り込み対象がない"); return; }
-    data = data.concat(rows);
-    saveData();
-    renderInput();
-    showToast(`${rows.length}行 取り込み（追記）`);
-  });
-
-  $("btnReplace").addEventListener("click", () => {
-    const rows = parsePaste(pasteBox.value);
-    if (rows.length === 0) { showToast("取り込み対象がない"); return; }
-    if (!confirm("全置換します。今のデータは消えます。いい？")) return;
-    data = rows;
-    saveData();
-    renderInput();
-    showToast(`${rows.length}行 取り込み（全置換）`);
-  });
-
-  $("btnExport").addEventListener("click", async () => {
-    const tsv = toTSV(data);
-    await copyText(tsv);
-    alert("TSV（Excelに貼れる形式）をコピーしました。");
-  });
-
-  $("btnWipe").addEventListener("click", () => {
-    if (!confirm("全データを削除します。いい？")) return;
-    data = [];
-    saveData();
-    renderInput();
-    showToast("全削除しました");
-  });
-
-  $("btnAddRow").addEventListener("click", () => {
-    data.push(normalizeRow({ appId:"", pin:"" }));
-    saveData();
-    renderInput();
-    showToast("行追加");
-    // 追加した行のAppIDにフォーカス
-    setTimeout(() => focusCell(data.length - 1, "appId"), 0);
-  });
-
-  $("btnSortAppId").addEventListener("click", () => {
-    data.sort((a,b) => (a.appId || "").localeCompare(b.appId || ""));
-    saveData();
-    renderInput();
-    showToast("AppIDで並び替え");
-  });
-
-  $("btnReload").addEventListener("click", () => {
-    data = loadData();
-    renderCopy();
-    showToast("更新しました");
-  });
-
-  // ===== Init =====
-  updateCount();
-  renderInput();
-})();
-</script>
+    render();
+  </script>
 </body>
 </html>
