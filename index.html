@@ -2,49 +2,44 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ID / PIN</title>
 
   <style>
     :root{
-      --bg:#f6f7f9;
+      --bg:#f4f6fb;
       --card:#ffffff;
-      --text:#111827;
+      --text:#0f172a;
       --muted:#6b7280;
       --line:#e5e7eb;
-      --head:#f3f4f6;
+      --head:#eef2ff;
 
-      --btn:#111827;
-      --btnText:#ffffff;
-      --btnSub:#eef2ff;
-      --btnSubText:#1f2937;
+      /* 反応（コピー/編集） */
+      --flash-bg:#0b1220;
+      --flash-text:#ffffff;
+      --flash-outline:rgba(11,18,32,.25);
 
-      --danger:#fee2e2;
-      --dangerText:#7f1d1d;
-
-      /* コピー強調（濃い） */
-      --flash:#111827;
-      --flashText:#ffffff;
-      --flashOutline:#111827;
-
-      /* #列 背景数字の濃さ */
-      --ghostOpacity:0.11;
+      /* 背景数字（濃くした） */
+      --ghost-base: rgba(15,23,42,.18); /* ←ここが濃さ。もっと濃くしたいなら .22 とかに */
     }
 
-    *{box-sizing:border-box;}
-    html,body{height:100%;}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Sans","Noto Sans JP","Apple Color Emoji","Segoe UI Emoji";
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",sans-serif;
       background:var(--bg);
       color:var(--text);
-      overscroll-behavior-y:contain;
+      overscroll-behavior-y: contain;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .wrap{
-      max-width:980px;
-      margin:0 auto;
-      padding:12px 12px calc(84px + env(safe-area-inset-bottom));
+    /* 画面レイアウト */
+    .app{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 14px 12px calc(96px + env(safe-area-inset-bottom));
     }
 
     .topbar{
@@ -52,780 +47,712 @@
       gap:10px;
       align-items:center;
       justify-content:space-between;
-      position:sticky;
-      top:0;
-      z-index:10;
-      padding:10px 0;
-      background:linear-gradient(to bottom, var(--bg) 70%, rgba(246,247,249,0));
-      backdrop-filter:saturate(140%) blur(8px);
+      margin-bottom:10px;
     }
 
-    .topbar .left, .topbar .right{
+    .btnrow{
       display:flex;
-      gap:8px;
-      align-items:center;
+      gap:10px;
       flex-wrap:wrap;
+      align-items:center;
     }
 
     button{
-      appearance:none;
-      border:1px solid transparent;
-      background:var(--btn);
-      color:var(--btnText);
-      border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
       padding:10px 14px;
-      font-weight:800;
-      font-size:14px;
+      border-radius:14px;
+      font-weight:700;
+      font-size:15px;
       line-height:1;
-      cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color:transparent;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
-    button.secondary{
-      background:var(--btnSub);
-      color:var(--btnSubText);
-      border-color:#c7d2fe;
-      font-weight:800;
+    button.primary{
+      background:#0b1220;
+      border-color:#0b1220;
+      color:#fff;
     }
     button.danger{
-      background:var(--danger);
-      color:var(--dangerText);
-      border-color:#fecaca;
+      background:#ffe9ea;
+      border-color:#ffd0d3;
+      color:#a11b1b;
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.45; }
+
+    .navbtn{
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      font-size:18px;
       font-weight:900;
     }
-    button.icon{
-      width:40px;
-      padding:10px 0;
-      text-align:center;
-      font-size:16px;
-    }
-    button:disabled{opacity:.40; cursor:not-allowed;}
 
     .card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:16px;
+      border-radius:18px;
       padding:12px;
+      box-shadow: 0 3px 18px rgba(15,23,42,.05);
+      margin-bottom:12px;
     }
-    .stack{display:grid; gap:12px;}
+
+    /* 入力エリア（注意書きは極力削った） */
+    .inputHead{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 8px 2px;
+      display:none; /* ←「注意書きなくして」なので非表示。必要なら true にして表示してもOK */
+    }
 
     textarea{
       width:100%;
-      min-height:120px;
+      min-height:104px;
+      max-height:180px;
       resize:vertical;
       border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      font-size:15px;
-      line-height:1.4;
+      border-radius:16px;
+      padding:12px 12px;
+      font-size:16px;
+      line-height:1.35;
       outline:none;
-      background:#fff;
+      background:#fbfcff;
+      -webkit-overflow-scrolling: touch;
     }
-    textarea:focus{border-color:#c7d2fe; box-shadow:0 0 0 3px rgba(99,102,241,.15);}
 
-    .row{
+    .midBtns{
       display:flex;
       gap:10px;
+      margin-top:10px;
       flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
     }
-    .row .btns{display:flex; gap:10px; flex-wrap:wrap;}
-
-    /* ===== テーブル（横スクロール無し） ===== */
-    .table{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:16px;
-      overflow:hidden;
-      background:#fff;
-    }
-    .thead, .tr{
-      display:grid;
-      grid-template-columns: 40px 1fr 32px 0.85fr 32px; /* # / ID / copy / PIN / copy */
-      align-items:center;
-    }
-    .thead{
-      background:var(--head);
-      border-bottom:1px solid var(--line);
-      font-size:12px;
-      color:#374151;
-      font-weight:900;
-    }
-    .thead div{padding:10px 10px;}
-    .tr{
-      border-bottom:1px solid var(--line);
-      min-height:54px;
-    }
-    .tr:last-child{border-bottom:none;}
-    .cell{padding:10px 10px; min-width:0;}
-
-    /* #列：狭い＋背景に薄い数字 */
-    .numCell{
-      position:relative;
-      padding:0;
-      height:100%;
-      display:flex;
-      align-items:center;
+    .midBtns button{
+      flex:1 1 180px;
       justify-content:center;
-      font-weight:900;
-      color:#111827;
-      z-index:1;
+      padding:12px 14px;
     }
-    .numCell .numFront{
+
+    /* テーブル（横スクロールさせない） */
+    .tableWrap{
+      overflow:hidden; /* 横スクロール禁止 */
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--card);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      table-layout:fixed; /* ←列幅固定で横ぶれ/横スクロール防止 */
+      font-size:16px;
+    }
+
+    thead th{
+      background: #f0f2f6;
+      color: #111827;
+      text-align:left;
+      padding:10px 10px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
+      letter-spacing:.02em;
+    }
+
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid var(--line);
+      vertical-align:middle;
       position:relative;
-      z-index:2;
-      font-size:14px;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
     }
-    .numCell .ghost{
+    tbody tr:last-child td{ border-bottom:none; }
+
+    /* 列幅：#は狭く、ID広く、PINはそこそこ */
+    col.colN { width: 56px; }      /* # */
+    col.colID{ width: auto; }      /* ID */
+    col.colPIN{ width: 40%; }      /* PIN */
+    col.colBtn{ width: 54px; }     /* コピーアイコン */
+
+    /* #列：背景数字（ゴースト） */
+    .ncell{
+      text-align:center;
+      font-weight:900;
+    }
+    .ghost{
       position:absolute;
       inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
       font-weight:900;
       font-size:28px;
-      letter-spacing:-0.02em;
-      opacity:var(--ghostOpacity);
+      letter-spacing:-.04em;
+      opacity:1;
+      color: var(--ghost-base);
+      transform: translateY(1px);
+    }
+    .nnum{
+      position:relative;
       z-index:1;
-      pointer-events:none;
-      transform:translateY(1px);
+      display:inline-grid;
+      place-items:center;
+      width:30px;
+      height:30px;
+      border-radius:999px;
+      background:#eef2ff;
+      border:1px solid rgba(59,130,246,.20);
+      font-size:14px;
     }
 
-    .idInput, .pinInput{
+    /* 入力フィールド（ID/PIN） */
+    .cellInput{
       width:100%;
       border:1px solid transparent;
       background:transparent;
-      font-size:15px;
+      font-size:18px;
       font-weight:800;
       padding:8px 10px;
-      border-radius:12px;
+      border-radius:14px;
       outline:none;
-      min-width:0;
+      min-height:40px;
     }
-    .pinInput{font-weight:900;}
-    .idInput:focus, .pinInput:focus{
-      border-color:#c7d2fe;
-      background:#fff;
-      box-shadow:0 0 0 3px rgba(99,102,241,.15);
+    .cellInput:focus{
+      border-color: rgba(59,130,246,.25);
+      background:#f8fbff;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.10);
     }
 
-    .copyMini{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100%;
-      padding:0;
-      margin:0;
-    }
-    .copyMini button{
-      width:28px;
-      height:28px;
-      padding:0;
-      border-radius:10px;
-      font-size:14px;
-      font-weight:900;
-    }
-    .copyMini button.secondary{
+    /* コピーアイコン */
+    .copyBtn{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      border:1px solid rgba(59,130,246,.20);
       background:#eef2ff;
-      border-color:#c7d2fe;
-    }
-
-    /* コピー時：セル単独で濃く */
-    .flashWrap{
-      background:var(--flash) !important;
-      color:var(--flashText) !important;
-    }
-    .flashWrap input{
-      color:var(--flashText) !important;
-      background:transparent !important;
-    }
-
-    /* ===== コピー画面（情報少なめ） ===== */
-    .simpleHeader{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin:0 0 10px 0;
-      font-weight:900;
-    }
-    .simpleHeader .title{font-size:16px;}
-    .simpleHeader .count{font-size:12px; color:var(--muted); font-weight:900;}
-
-    /* 画面切替（下タブ） */
-    .tabbar{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-      background:rgba(246,247,249,.92);
-      backdrop-filter:saturate(140%) blur(10px);
-      border-top:1px solid var(--line);
-    }
-    .tabs{
-      max-width:980px;
-      margin:0 auto;
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
+      place-items:center;
+      font-size:18px;
+      font-weight:900;
+      user-select:none;
+    }
+    .copyBtn:active{ transform: translateY(1px); }
+
+    /* コピー/編集の強い反応（単独セルだけ光る） */
+    .flash{
+      background: var(--flash-bg) !important;
+      color: var(--flash-text) !important;
+      outline: 3px solid var(--flash-outline);
+      transition: background .12s ease, color .12s ease, outline .12s ease;
+    }
+    .flashInput{
+      background: var(--flash-bg) !important;
+      color: var(--flash-text) !important;
+      border-color: var(--flash-bg) !important;
+    }
+
+    /* 下の固定バー（入力 / コピーモード切替） */
+    .bottomBar{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(244,246,251,.85);
+      backdrop-filter: blur(14px);
+      border-top:1px solid rgba(229,231,235,.8);
+    }
+    .bottomInner{
+      max-width: 920px;
+      margin:0 auto;
+      display:flex;
+      gap:12px;
     }
     .tabBtn{
-      border-radius:16px;
-      padding:14px 12px;
-      font-size:16px;
+      flex:1 1 0;
+      padding:16px 14px;
+      border-radius:18px;
+      font-size:18px;
       font-weight:900;
     }
-    .tabBtn.secondary{
-      background:#fff;
-      border:1px solid var(--line);
-      color:#111827;
-    }
-
-    .toast{
-      position:fixed;
-      left:50%;
-      bottom:92px;
-      transform:translateX(-50%);
-      background:#111827;
+    .tabBtn.active{
+      background:#0b1220;
+      border-color:#0b1220;
       color:#fff;
-      padding:10px 14px;
-      border-radius:999px;
-      font-weight:900;
-      font-size:13px;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .18s ease, transform .18s ease;
-      z-index:9999;
-    }
-    .toast.show{
-      opacity:1;
-      transform:translateX(-50%) translateY(-4px);
     }
 
+    /* モード表示 */
+    .modeLabel{
+      font-size:12px;
+      color:var(--muted);
+      margin: 0 0 10px 2px;
+    }
+
+    /* 小画面最適化 */
     @media (max-width:420px){
-      .thead, .tr{ grid-template-columns: 34px 1fr 28px 0.9fr 28px; }
-      .numCell .ghost{font-size:24px;}
+      col.colPIN{ width: 44%; }
+      .cellInput{ font-size:17px; }
+      .ghost{ font-size:26px; }
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
+  <div class="app">
+
     <div class="topbar">
-      <div class="left">
-        <button id="btnSave">保存</button>
-        <button id="btnLoad" class="secondary">読込</button>
-        <button id="btnClear" class="danger">全削除</button>
+      <div class="btnrow">
+        <button class="primary" id="btnSave">保存</button>
+        <button id="btnLoad">読込</button>
+        <button class="danger" id="btnClearAll">全削除</button>
       </div>
-      <div class="right">
-        <button id="btnUndo" class="secondary icon" title="戻る">←</button>
-        <button id="btnRedo" class="secondary icon" title="進む">→</button>
+
+      <div class="btnrow">
+        <button class="navbtn" id="btnUndo" title="戻る">←</button>
+        <button class="navbtn" id="btnRedo" title="進む">→</button>
       </div>
     </div>
 
-    <!-- 入力画面 -->
-    <section id="viewInput" class="stack">
-      <div class="card stack">
-        <textarea id="pasteBox" placeholder="ここに『ID PIN』を複数行で貼り付け → 『貼り付け反映』"></textarea>
-        <div class="row">
-          <div class="btns">
-            <button id="btnApply">貼り付け反映</button>
-            <button id="btnCopyTSV" class="secondary">データをコピー（TSV）</button>
-          </div>
-        </div>
-      </div>
+    <div class="card" id="inputCard">
+      <div class="modeLabel">入力（貼り付け → 反映）</div>
+      <p class="hint">ここに「ID PIN」を複数行で貼り付け → 反映</p>
+      <textarea id="bulkText" placeholder="例：VMA1069413711  8p7s@3WD"></textarea>
 
-      <div class="card">
-        <div class="table">
-          <div class="thead">
-            <div>#</div>
-            <div>ID</div>
-            <div></div>
-            <div>PIN</div>
-            <div></div>
-          </div>
-          <div id="tbody"></div>
-        </div>
+      <div class="midBtns">
+        <button class="primary" id="btnApply">貼り付け反映</button>
+        <button id="btnCopyTSV">データをコピー（TSV）</button>
       </div>
-    </section>
+    </div>
 
-    <!-- コピー画面 -->
-    <section id="viewCopy" class="stack" style="display:none;">
-      <div class="card">
-        <div class="simpleHeader">
-          <div class="title">ID / PIN</div>
-          <div class="count" id="copyCount">件数：0</div>
-        </div>
+    <div class="tableWrap" id="tableWrap">
+      <table>
+        <colgroup>
+          <col class="colN">
+          <col class="colID">
+          <col class="colBtn">
+          <col class="colPIN">
+          <col class="colBtn">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ID</th>
+            <th></th>
+            <th>PIN</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
 
-        <div class="table">
-          <div class="thead">
-            <div>#</div>
-            <div>ID</div>
-            <div></div>
-            <div>PIN</div>
-            <div></div>
-          </div>
-          <div id="tbodyCopy"></div>
-        </div>
-      </div>
-    </section>
   </div>
 
-  <div class="tabbar">
-    <div class="tabs">
-      <button id="tabInput" class="tabBtn">入力</button>
-      <button id="tabCopy" class="tabBtn secondary">コピー</button>
+  <div class="bottomBar">
+    <div class="bottomInner">
+      <button class="tabBtn active" id="tabInput">入力</button>
+      <button class="tabBtn" id="tabCopy">コピー</button>
     </div>
   </div>
-
-  <div id="toast" class="toast">コピーしました</div>
 
 <script>
-/* ==========
-  状態
-========== */
-const LS_KEY   = "copy_app_rows_index_only_v1";
-const LS_PASTE = "copy_app_paste_index_only_v1";
+(() => {
+  // ====== 状態 ======
+  const LS_KEY = "idpin_rows_v2";
+  const LS_GHOST = "idpin_ghost_v2";
 
-let rows = [];
-let undoStack = [];
-let redoStack = [];
-const UNDO_LIMIT = 50;
+  /** rows: [{id:"", pin:""}] */
+  let rows = [];
 
-const el = (id) => document.getElementById(id);
+  /** ghostCount: 行ごとの編集カウンタ（背景の薄数字） */
+  let ghostCount = [];
 
-const viewInput = el("viewInput");
-const viewCopy  = el("viewCopy");
-const tabInput  = el("tabInput");
-const tabCopy   = el("tabCopy");
+  // Undo/Redo（軽量）
+  const history = [];
+  let histPos = -1;
+  const MAX_HISTORY = 60;
 
-const pasteBox  = el("pasteBox");
-const tbody     = el("tbody");
-const tbodyCopy = el("tbodyCopy");
+  // 編集時の「同値ならカウントしない」判定のために保持
+  const lastValue = new Map(); // key: "r{idx}:id" / "r{idx}:pin" -> string
 
-const btnSave    = el("btnSave");
-const btnLoad    = el("btnLoad");
-const btnClear   = el("btnClear");
-const btnApply   = el("btnApply");
-const btnCopyTSV = el("btnCopyTSV");
-const btnUndo    = el("btnUndo");
-const btnRedo    = el("btnRedo");
+  // ====== DOM ======
+  const $ = (id) => document.getElementById(id);
+  const tbody = $("tbody");
+  const bulkText = $("bulkText");
 
-const copyCount  = el("copyCount");
-const toast      = el("toast");
+  const btnSave = $("btnSave");
+  const btnLoad = $("btnLoad");
+  const btnClearAll = $("btnClearAll");
+  const btnApply = $("btnApply");
+  const btnCopyTSV = $("btnCopyTSV");
+  const btnUndo = $("btnUndo");
+  const btnRedo = $("btnRedo");
 
-let toastTimer = null;
+  const tabInput = $("tabInput");
+  const tabCopy = $("tabCopy");
+  const inputCard = $("inputCard");
 
-function showToast(msg){
-  toast.textContent = msg;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>toast.classList.remove("show"), 900);
-}
+  // ====== ユーティリティ ======
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
-async function copyText(text){
-  try{
-    await navigator.clipboard.writeText(text);
-    return true;
-  }catch(e){
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
+  function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+  function pushHistory() {
+    const snap = {
+      rows: deepClone(rows),
+      ghost: deepClone(ghostCount),
+    };
+    // histPos 以降を切り捨て
+    history.splice(histPos + 1);
+    history.push(snap);
+    if (history.length > MAX_HISTORY) history.shift();
+    histPos = history.length - 1;
+    updateUndoRedo();
+  }
+
+  function applyHistory(pos){
+    if (pos < 0 || pos >= history.length) return;
+    histPos = pos;
+    rows = deepClone(history[histPos].rows);
+    ghostCount = deepClone(history[histPos].ghost);
+    render();
+    updateUndoRedo();
+  }
+
+  function updateUndoRedo(){
+    btnUndo.disabled = !(histPos > 0);
+    btnRedo.disabled = !(histPos < history.length - 1);
+  }
+
+  // 背景数字の色を「数字によって変える」
+  function ghostColor(n){
+    // n を段階化
+    // 0: 青系薄 / 1-3: 紫 / 4-9: 緑 / 10-19: 橙 / 20+: 赤
+    let hue = 220, sat = 80, light = 40, alpha = 0.22; // ←濃さはここ
+    if (n === 0) { hue = 220; alpha = 0.20; }
+    else if (n <= 3) { hue = 270; alpha = 0.22; }
+    else if (n <= 9) { hue = 145; alpha = 0.22; }
+    else if (n <= 19) { hue = 28;  alpha = 0.24; }
+    else { hue = 0; alpha = 0.24; }
+    return `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+  }
+
+  async function copyText(text){
+    // iOS Safari/Chrome 対応のためフォールバック付き
     try{
-      document.execCommand("copy");
-      document.body.removeChild(ta);
+      await navigator.clipboard.writeText(text);
       return true;
-    }catch(err){
-      document.body.removeChild(ta);
-      return false;
+    }catch(e){
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        return ok;
+      }catch(e2){
+        return false;
+      }
     }
   }
-}
 
-/* ==========
-  Undo / Redo
-========== */
-function snapshot(){
-  return JSON.stringify({ rows, paste: pasteBox.value ?? "" });
-}
-function pushUndo(){
-  undoStack.push(snapshot());
-  if(undoStack.length > UNDO_LIMIT) undoStack.shift();
-  redoStack = [];
-  refreshUndoRedo();
-}
-function restoreFrom(json){
-  const obj = JSON.parse(json);
-  rows = Array.isArray(obj.rows) ? obj.rows : [];
-  pasteBox.value = obj.paste ?? "";
-  renderAll();
-  refreshUndoRedo();
-}
-function undo(){
-  if(!undoStack.length) return;
-  redoStack.push(snapshot());
-  const prev = undoStack.pop();
-  restoreFrom(prev);
-}
-function redo(){
-  if(!redoStack.length) return;
-  undoStack.push(snapshot());
-  const next = redoStack.pop();
-  restoreFrom(next);
-}
-function refreshUndoRedo(){
-  btnUndo.disabled = (undoStack.length === 0);
-  btnRedo.disabled = (redoStack.length === 0);
-}
-
-/* ==========
-  #列 背景数字の色
-========== */
-function ghostColorByCount(n){
-  if(n <= 0) return "#6b7280";   // グレー
-  if(n <= 3) return "#2563eb";   // 青
-  if(n <= 6) return "#16a34a";   // 緑
-  if(n <= 9) return "#ea580c";   // オレンジ
-  return "#dc2626";              // 赤
-}
-
-/* ==========
-  パース / TSV
-========== */
-function parseLinesToRows(text){
-  const out = [];
-  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  for(const line of lines){
-    const parts = line.split(/\s+/);
-    const id  = (parts[0] ?? "").trim();
-    const pin = (parts[1] ?? "").trim();
-    if(!id && !pin) continue;
-    out.push({ id, pin, editCount: 0 });
+  function flashOne(el, cls="flash", ms=180){
+    if (!el) return;
+    el.classList.add(cls);
+    // 反応を速く（連打時も潰れない）
+    setTimeout(() => el.classList.remove(cls), ms);
   }
-  return out;
-}
-function toTSV(){
-  return rows.map(r => `${r.id}\t${r.pin}`).join("\n");
-}
 
-/* ==========
-  保存 / 読込 / 全削除
-========== */
-function save(){
-  localStorage.setItem(LS_KEY, JSON.stringify(rows));
-  localStorage.setItem(LS_PASTE, pasteBox.value ?? "");
-  showToast("保存しました");
-}
-function load(){
-  const s = localStorage.getItem(LS_KEY);
-  const p = localStorage.getItem(LS_PASTE);
-  rows = s ? JSON.parse(s) : [];
-  pasteBox.value = p ?? "";
-  renderAll();
-  showToast("読込しました");
-}
-function clearAll(){
-  pushUndo();
-  rows = [];
-  pasteBox.value = "";
-  renderAll();
-  showToast("全削除");
-}
+  function ensureRows(n){
+    while(rows.length < n) rows.push({id:"", pin:""});
+    while(ghostCount.length < n) ghostCount.push(0);
+  }
 
-/* ==========
-  画面切替
-========== */
-function setView(which){
-  const isInput = (which === "input");
-  viewInput.style.display = isInput ? "" : "none";
-  viewCopy.style.display  = isInput ? "none" : "";
+  function normalizeLine(line){
+    // タブ/複数スペースを許容
+    const s = line.trim();
+    if(!s) return null;
+    const parts = s.split(/\s+/);
+    if(parts.length === 1){
+      return { id: parts[0], pin: "" };
+    }
+    const id = parts[0];
+    const pin = parts.slice(1).join(" ");
+    return { id, pin };
+  }
 
-  tabInput.classList.toggle("secondary", !isInput);
-  tabCopy.classList.toggle("secondary", isInput);
-}
+  function rowsToTSV(){
+    // ID \t PIN \n
+    return rows
+      .filter(r => (r.id || r.pin))
+      .map(r => `${r.id}\t${r.pin}`)
+      .join("\n");
+  }
 
-/* ==========
-  コピー強調（セル単独）
-========== */
-function flashCell(wrapper){
-  wrapper.classList.add("flashWrap");
-  setTimeout(()=>wrapper.classList.remove("flashWrap"), 520);
-}
+  // ====== レンダリング（高速：tbodyを一気に差し替え） ======
+  function render(){
+    const frag = document.createDocumentFragment();
 
-/* ==========
-  行レンダ（入力）
-========== */
-function renderRowInput(r, idx){
-  const tr = document.createElement("div");
-  tr.className = "tr";
+    for(let i=0;i<rows.length;i++){
+      const r = rows[i];
+      const tr = document.createElement("tr");
+      tr.dataset.row = String(i);
 
-  // #列（前面番号 + 背景編集カウント）
-  const num = document.createElement("div");
-  num.className = "cell numCell";
+      // #セル（背景ゴースト）
+      const tdN = document.createElement("td");
+      tdN.className = "ncell";
+      tdN.innerHTML = `
+        <div class="ghost" style="color:${ghostColor(ghostCount[i]||0)}">${ghostCount[i]||0}</div>
+        <span class="nnum">${i+1}</span>
+      `;
 
-  const front = document.createElement("div");
-  front.className = "numFront";
-  front.textContent = String(idx + 1);
+      // ID入力
+      const tdID = document.createElement("td");
+      tdID.innerHTML = `<input class="cellInput" inputmode="text" autocomplete="off" spellcheck="false"
+        data-field="id" value="${escapeHtml(r.id)}" />`;
 
-  const ghost = document.createElement("div");
-  ghost.className = "ghost";
-  ghost.textContent = String(r.editCount ?? 0);
-  ghost.style.color = ghostColorByCount(Number(r.editCount ?? 0));
+      // ID コピー
+      const tdIDC = document.createElement("td");
+      tdIDC.innerHTML = `<div class="copyBtn" role="button" aria-label="copy id" data-copy="id">📋</div>`;
 
-  num.appendChild(ghost);
-  num.appendChild(front);
+      // PIN入力
+      const tdPIN = document.createElement("td");
+      tdPIN.innerHTML = `<input class="cellInput" inputmode="text" autocomplete="off" spellcheck="false"
+        data-field="pin" value="${escapeHtml(r.pin)}" />`;
 
-  // ID
-  const idCell = document.createElement("div");
-  idCell.className = "cell";
-  const idInput = document.createElement("input");
-  idInput.className = "idInput";
-  idInput.value = r.id ?? "";
-  idInput.inputMode = "text";
-  idInput.autocapitalize = "none";
-  idInput.autocomplete = "off";
-  idInput.spellcheck = false;
+      // PIN コピー
+      const tdPINC = document.createElement("td");
+      tdPINC.innerHTML = `<div class="copyBtn" role="button" aria-label="copy pin" data-copy="pin">📋</div>`;
 
-  // ★同値ならカウントしない（focus時にbeforeを保存、blurで比較）
-  let idBefore = idInput.value;
-  idInput.addEventListener("focus", ()=>{
-    idBefore = (idInput.value ?? "");
-  });
-  idInput.addEventListener("blur", ()=>{
-    const beforeTrim = (idBefore ?? "").trim();
-    const afterTrim  = (idInput.value ?? "").trim();
+      tr.appendChild(tdN);
+      tr.appendChild(tdID);
+      tr.appendChild(tdIDC);
+      tr.appendChild(tdPIN);
+      tr.appendChild(tdPINC);
 
-    // 値の反映（文字そのものはtrimしない＝入力した通り保持）
-    const afterRaw = (idInput.value ?? "");
-    const prevRaw  = (rows[idx].id ?? "");
-    if(prevRaw !== afterRaw){
-      pushUndo();
-      rows[idx].id = afterRaw;
+      frag.appendChild(tr);
     }
 
-    // ★同じ値なら増やさない（trim同士で比較）
-    if(afterTrim !== beforeTrim){
-      rows[idx].editCount = Number(rows[idx].editCount ?? 0) + 1;
-      ghost.textContent = String(rows[idx].editCount);
-      ghost.style.color = ghostColorByCount(rows[idx].editCount);
-    }
+    // 差し替え
+    tbody.replaceChildren(frag);
 
-    renderCopyOnly();
+    // lastValue を更新（同値判定用）
+    for(let i=0;i<rows.length;i++){
+      lastValue.set(`r${i}:id`, rows[i].id || "");
+      lastValue.set(`r${i}:pin`, rows[i].pin || "");
+    }
+  }
+
+  function escapeHtml(s){
+    return (s ?? "").replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  // ====== イベント（テーブルは委譲で軽く） ======
+
+  // 1) コピー（単独セルだけ反応）
+  tbody.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-copy]");
+    if(!btn) return;
+
+    const tr = btn.closest("tr");
+    if(!tr) return;
+
+    const idx = Number(tr.dataset.row);
+    const which = btn.dataset.copy; // "id" or "pin"
+    const value = (rows[idx] && rows[idx][which]) ? rows[idx][which] : "";
+
+    const ok = await copyText(value);
+
+    // 反応を強く：ボタンと対象inputだけ光らせる
+    flashOne(btn, "flash", 220);
+    const input = tr.querySelector(`input[data-field="${which}"]`);
+    if (input) flashOne(input, "flashInput", 220);
+
+    // コピー失敗なら少し長めに光らせる（気づける）
+    if(!ok){
+      flashOne(btn, "flash", 420);
+    }
   });
 
-  idCell.appendChild(idInput);
+  // 2) 編集：フォーカス時に全選択（あなたの要望）
+  tbody.addEventListener("focusin", (e) => {
+    const input = e.target.closest("input[data-field]");
+    if(!input) return;
+    // iOSで確実に全選択されるように遅延
+    requestAnimationFrame(() => {
+      try{ input.select(); }catch(_){}
+    });
+  });
 
-  // IDコピー（入力画面でも）
-  const idCopyCell = document.createElement("div");
-  idCopyCell.className = "cell copyMini";
-  const btnIdCopy = document.createElement("button");
-  btnIdCopy.className = "secondary";
-  btnIdCopy.textContent = "📋";
-  btnIdCopy.title = "IDをコピー";
-  btnIdCopy.addEventListener("click", async ()=>{
-    const ok = await copyText(rows[idx].id ?? "");
-    if(ok){
-      flashCell(idCell);
-      showToast("IDコピー");
+  // 3) 編集：値反映（IDを編集した時だけ ghostCount++、同値はノーカウント）
+  let editTimer = null;
+  tbody.addEventListener("input", (e) => {
+    const input = e.target.closest("input[data-field]");
+    if(!input) return;
+
+    const tr = input.closest("tr");
+    const idx = Number(tr.dataset.row);
+    const field = input.dataset.field; // id / pin
+    const newVal = input.value ?? "";
+
+    // rowsに即反映（レスポンス優先）
+    rows[idx][field] = newVal;
+
+    // ghostCount ルール：ID編集だけ、かつ「前と同じ値」なら増やさない
+    if(field === "id"){
+      const key = `r${idx}:id`;
+      const prev = lastValue.get(key) ?? "";
+      if(newVal !== prev){
+        ghostCount[idx] = (ghostCount[idx] || 0) + 1;
+        // ゴーストだけ更新（render全体は重いので部分更新）
+        const ghost = tr.querySelector(".ghost");
+        if(ghost){
+          ghost.textContent = String(ghostCount[idx]);
+          ghost.style.color = ghostColor(ghostCount[idx]);
+        }
+        lastValue.set(key, newVal);
+      }
     }else{
-      showToast("コピー失敗");
+      lastValue.set(`r${idx}:pin`, newVal);
     }
-  });
-  idCopyCell.appendChild(btnIdCopy);
 
-  // PIN
-  const pinCell = document.createElement("div");
-  pinCell.className = "cell";
-  const pinInput = document.createElement("input");
-  pinInput.className = "pinInput";
-  pinInput.value = r.pin ?? "";
-  pinInput.inputMode = "text";
-  pinInput.autocapitalize = "none";
-  pinInput.autocomplete = "off";
-  pinInput.spellcheck = false;
-
-  let pinBefore = pinInput.value;
-  pinInput.addEventListener("focus", ()=>{ pinBefore = (pinInput.value ?? ""); });
-  pinInput.addEventListener("blur", ()=>{
-    const afterRaw = (pinInput.value ?? "");
-    const prevRaw  = (rows[idx].pin ?? "");
-    if(prevRaw !== afterRaw){
-      pushUndo();
-      rows[idx].pin = afterRaw;
-      renderCopyOnly();
-    }
-    // PIN編集では editCount を増やさない（仕様：ID編集だけカウント）
+    // Undo/Redo のため、編集をまとめて履歴に入れる（連打でも軽い）
+    clearTimeout(editTimer);
+    editTimer = setTimeout(() => {
+      pushHistory();
+    }, 250);
   });
 
-  pinCell.appendChild(pinInput);
+  // ====== 上部ボタン群 ======
+  btnSave.addEventListener("click", () => {
+    localStorage.setItem(LS_KEY, JSON.stringify(rows));
+    localStorage.setItem(LS_GHOST, JSON.stringify(ghostCount));
+    flashOne(btnSave, "flash", 220);
+  });
 
-  // PINコピー
-  const pinCopyCell = document.createElement("div");
-  pinCopyCell.className = "cell copyMini";
-  const btnPinCopy = document.createElement("button");
-  btnPinCopy.className = "secondary";
-  btnPinCopy.textContent = "📋";
-  btnPinCopy.title = "PINをコピー";
-  btnPinCopy.addEventListener("click", async ()=>{
-    const ok = await copyText(rows[idx].pin ?? "");
-    if(ok){
-      flashCell(pinCell);
-      showToast("PINコピー");
+  btnLoad.addEventListener("click", () => {
+    const r = localStorage.getItem(LS_KEY);
+    const g = localStorage.getItem(LS_GHOST);
+    try{
+      rows = r ? JSON.parse(r) : [];
+      ghostCount = g ? JSON.parse(g) : [];
+      if(!Array.isArray(rows)) rows = [];
+      if(!Array.isArray(ghostCount)) ghostCount = [];
+    }catch(e){
+      rows = [];
+      ghostCount = [];
+    }
+    if(rows.length === 0){
+      ensureRows(30); // 初期30行
     }else{
-      showToast("コピー失敗");
+      ensureRows(rows.length);
     }
+    render();
+    pushHistory();
+    flashOne(btnLoad, "flash", 220);
   });
-  pinCopyCell.appendChild(btnPinCopy);
 
-  tr.appendChild(num);
-  tr.appendChild(idCell);
-  tr.appendChild(idCopyCell);
-  tr.appendChild(pinCell);
-  tr.appendChild(pinCopyCell);
-
-  return tr;
-}
-
-/* ==========
-  行レンダ（コピー画面：編集不可）
-========== */
-function renderRowCopy(r, idx){
-  const tr = document.createElement("div");
-  tr.className = "tr";
-
-  const num = document.createElement("div");
-  num.className = "cell numCell";
-
-  const front = document.createElement("div");
-  front.className = "numFront";
-  front.textContent = String(idx + 1);
-
-  const ghost = document.createElement("div");
-  ghost.className = "ghost";
-  ghost.textContent = String(r.editCount ?? 0);
-  ghost.style.color = ghostColorByCount(Number(r.editCount ?? 0));
-
-  num.appendChild(ghost);
-  num.appendChild(front);
-
-  const idCell = document.createElement("div");
-  idCell.className = "cell";
-  const idText = document.createElement("div");
-  idText.style.fontWeight = "900";
-  idText.style.padding = "8px 10px";
-  idText.style.borderRadius = "12px";
-  idText.style.userSelect = "text";
-  idText.textContent = (r.id ?? "");
-  idCell.appendChild(idText);
-
-  const idCopyCell = document.createElement("div");
-  idCopyCell.className = "cell copyMini";
-  const btnIdCopy = document.createElement("button");
-  btnIdCopy.className = "secondary";
-  btnIdCopy.textContent = "📋";
-  btnIdCopy.addEventListener("click", async ()=>{
-    const ok = await copyText(r.id ?? "");
-    if(ok){ flashCell(idCell); showToast("IDコピー"); }
-    else{ showToast("コピー失敗"); }
+  btnClearAll.addEventListener("click", () => {
+    if(!confirm("全部消します。OK？")) return;
+    rows = [];
+    ghostCount = [];
+    ensureRows(30);
+    render();
+    pushHistory();
+    flashOne(btnClearAll, "flash", 220);
   });
-  idCopyCell.appendChild(btnIdCopy);
 
-  const pinCell = document.createElement("div");
-  pinCell.className = "cell";
-  const pinText = document.createElement("div");
-  pinText.style.fontWeight = "900";
-  pinText.style.padding = "8px 10px";
-  pinText.style.borderRadius = "12px";
-  pinText.style.userSelect = "text";
-  pinText.textContent = (r.pin ?? "");
-  pinCell.appendChild(pinText);
+  btnApply.addEventListener("click", () => {
+    const lines = bulkText.value.split(/\r?\n/).map(normalizeLine).filter(Boolean);
+    if(lines.length === 0) return;
 
-  const pinCopyCell = document.createElement("div");
-  pinCopyCell.className = "cell copyMini";
-  const btnPinCopy = document.createElement("button");
-  btnPinCopy.className = "secondary";
-  btnPinCopy.textContent = "📋";
-  btnPinCopy.addEventListener("click", async ()=>{
-    const ok = await copyText(r.pin ?? "");
-    if(ok){ flashCell(pinCell); showToast("PINコピー"); }
-    else{ showToast("コピー失敗"); }
+    ensureRows(Math.max(30, lines.length));
+
+    for(let i=0;i<lines.length;i++){
+      rows[i].id = lines[i].id || "";
+      rows[i].pin = lines[i].pin || "";
+      // 貼り付け反映は「編集カウント」に入れない（要望があればここで増やすようにもできる）
+    }
+
+    render();
+    pushHistory();
+    flashOne(btnApply, "flash", 220);
   });
-  pinCopyCell.appendChild(btnPinCopy);
 
-  tr.appendChild(num);
-  tr.appendChild(idCell);
-  tr.appendChild(idCopyCell);
-  tr.appendChild(pinCell);
-  tr.appendChild(pinCopyCell);
+  btnCopyTSV.addEventListener("click", async () => {
+    const tsv = rowsToTSV();
+    const ok = await copyText(tsv);
+    flashOne(btnCopyTSV, "flash", ok ? 220 : 420);
+  });
 
-  return tr;
-}
+  btnUndo.addEventListener("click", () => applyHistory(histPos - 1));
+  btnRedo.addEventListener("click", () => applyHistory(histPos + 1));
 
-/* ==========
-  レンダリング
-========== */
-function renderAll(){
-  tbody.innerHTML = "";
-  rows.forEach((r, i)=> tbody.appendChild(renderRowInput(r, i)));
-  renderCopyOnly();
-  copyCount.textContent = `件数：${rows.length}`;
-}
-function renderCopyOnly(){
-  tbodyCopy.innerHTML = "";
-  rows.forEach((r,i)=> tbodyCopy.appendChild(renderRowCopy(r,i)));
-  copyCount.textContent = `件数：${rows.length}`;
-}
-
-/* ==========
-  UIイベント
-========== */
-tabInput.addEventListener("click", ()=>setView("input"));
-tabCopy.addEventListener("click", ()=>setView("copy"));
-
-btnSave.addEventListener("click", save);
-btnLoad.addEventListener("click", load);
-btnClear.addEventListener("click", clearAll);
-
-btnUndo.addEventListener("click", undo);
-btnRedo.addEventListener("click", redo);
-
-btnApply.addEventListener("click", ()=>{
-  const text = pasteBox.value ?? "";
-  const parsed = parseLinesToRows(text);
-
-  pushUndo();
-  rows = parsed;
-
-  renderAll();
-  showToast("反映しました");
-});
-
-btnCopyTSV.addEventListener("click", async ()=>{
-  const tsv = toTSV();
-  const ok = await copyText(tsv);
-  if(ok) showToast("TSVコピー");
-  else showToast("コピー失敗");
-});
-
-/* ==========
-  初期化
-========== */
-(function init(){
-  const s = localStorage.getItem(LS_KEY);
-  const p = localStorage.getItem(LS_PASTE);
-  if(s){
-    try{ rows = JSON.parse(s) || []; }catch(e){ rows = []; }
+  // ====== 下タブ（入力/コピー） ======
+  function setMode(mode){
+    if(mode === "input"){
+      tabInput.classList.add("active");
+      tabCopy.classList.remove("active");
+      inputCard.style.display = "";
+      // 入力へ行ったら textarea を即フォーカスしやすく（不要なら削除OK）
+      // bulkText.focus();
+    }else{
+      tabCopy.classList.add("active");
+      tabInput.classList.remove("active");
+      inputCard.style.display = "none";
+    }
   }
-  if(p != null) pasteBox.value = p;
+  tabInput.addEventListener("click", () => setMode("input"));
+  tabCopy.addEventListener("click", () => setMode("copy"));
 
-  renderAll();
-  refreshUndoRedo();
-  setView("input");
+  // ====== 初期化 ======
+  function init(){
+    // まずローカル保存があれば読む
+    const r = localStorage.getItem(LS_KEY);
+    const g = localStorage.getItem(LS_GHOST);
+    try{
+      rows = r ? JSON.parse(r) : [];
+      ghostCount = g ? JSON.parse(g) : [];
+      if(!Array.isArray(rows)) rows = [];
+      if(!Array.isArray(ghostCount)) ghostCount = [];
+    }catch(e){
+      rows = [];
+      ghostCount = [];
+    }
+
+    if(rows.length === 0){
+      ensureRows(30);
+    }else{
+      ensureRows(rows.length);
+    }
+
+    render();
+    pushHistory(); // 初期状態を履歴に
+    setMode("input");
+  }
+
+  init();
+
 })();
 </script>
 </body>
