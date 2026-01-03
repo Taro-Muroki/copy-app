@@ -28,15 +28,14 @@
       --copiedBg:#dbeafe;
       --copiedLine:#93c5fd;
 
-      /* #列 背景数字（見えるように） */
-      --ghostAlpha:0.28; /* ← 0.22 → 少し濃く */
-      --ghostSize:46px;  /* ← 大きくして見えやすく */
+      /* #列 背景数字（見やすく濃く変更） */
+      --ghostAlpha:0.5;    /* ← 0.22から0.5へ変更 */
 
-      /* テーブル列幅（#最狭 / ID最広 / PIN次） */
-      --colNum:40px;
-      --colId:2.2fr;
-      --colPin:1.4fr;
-      --colBtn:56px;
+      /* テーブル列幅（IDを最も広く、PINを次に広く） */
+      --colNum:48px;       /* 狭く */
+      --colBtn:54px;       /* ボタン幅 */
+      --colId:1.8fr;       /* 最も広く */
+      --colPin:1.2fr;      /* 次に広く */
     }
 
     *{box-sizing:border-box;}
@@ -54,26 +53,24 @@
       display:flex;
       flex-direction:column;
     }
-
-    /* ===== Top ===== */
     .topbar{
       position:sticky;
       top:0;
       z-index:30;
-      background:rgba(245,247,251,.92);
+      background:rgba(245,247,251,.95);
       backdrop-filter:saturate(180%) blur(12px);
       border-bottom:1px solid var(--line);
-      padding:10px 12px 6px; /* ← 少し詰める */
+      padding:8px 12px 6px; /* 余白を少し縮小 */
     }
     .toprow{
       display:flex;
-      gap:10px;
+      gap:8px;
       align-items:center;
       justify-content:space-between;
     }
     .btnrow{
       display:flex;
-      gap:10px;
+      gap:8px;
       align-items:center;
       flex-wrap:wrap;
     }
@@ -81,8 +78,9 @@
       border:1px solid var(--line);
       background:var(--card);
       color:var(--text);
-      padding:10px 14px;
-      border-radius:14px;
+      padding:8px 12px; /* 少しコンパクトに */
+      border-radius:12px;
+      font-size:14px;
       font-weight:700;
       letter-spacing:.01em;
       user-select:none;
@@ -102,11 +100,11 @@
       font-weight:800;
     }
     .btn.icon{
-      width:44px;height:44px;
+      width:40px;height:40px;
       padding:0;
       display:grid;
       place-items:center;
-      border-radius:14px;
+      border-radius:12px;
       background:#eef2ff;
       border:1px solid #dbeafe;
       font-size:18px;
@@ -116,60 +114,63 @@
       filter:grayscale(.2);
       transform:none;
     }
+    
+    /* タイトル行の余白を削減 */
     .titleline{
-      margin-top:6px; /* ← 少し詰める */
+      margin-top:4px; 
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
     }
     .title{
-      font-size:18px;
+      font-size:16px;
       font-weight:900;
     }
     .count{
-      font-size:14px;
+      font-size:13px;
       color:var(--muted);
       font-weight:800;
     }
 
-    /* ===== Content ===== */
+    /* コンテンツエリアの余白を削減 */
     .content{
       width:min(980px,100%);
       margin:0 auto;
-      padding:8px 12px 88px; /* ← 上の余白を削る（無駄スペース対策） */
+      padding:6px 12px 96px; /* 上部paddingを縮小 */
       display:flex;
       flex-direction:column;
-      gap:10px; /* ← カード間を詰める */
+      gap:8px; /* カード間の隙間も少し詰める */
     }
 
     .card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
+      border-radius:16px;
+      padding:12px;
     }
 
-    /* 入力（貼り付け） */
+    /* 入力シート（貼り付け） */
     .pasteWrap{
       display:flex;
       flex-direction:column;
-      gap:10px; /* ← 詰める */
+      gap:8px; /* 隙間調整 */
     }
     .pasteLabel{
-      font-size:13px;
+      font-size:12px;
       color:var(--muted);
       font-weight:800;
+      margin-bottom:4px;
     }
     textarea{
       width:100%;
-      min-height:110px;
+      min-height:100px;
       resize:vertical;
       border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px 14px;
-      font-size:18px;
-      line-height:1.35;
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:16px;
+      line-height:1.4;
       outline:none;
       background:#fbfdff;
       -webkit-overflow-scrolling:touch;
@@ -180,19 +181,20 @@
     }
     .actions2{
       display:flex;
-      gap:12px;
+      gap:10px;
       flex-wrap:wrap;
+      margin-top:8px;
     }
     .actions2 .btn{
       flex:1;
-      min-width:160px;
-      padding:14px 16px;
-      border-radius:18px;
-      font-size:18px;
+      min-width:140px;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:16px;
       font-weight:900;
     }
 
-    /* テーブル */
+    /* テーブル共通 */
     .tableCard{
       padding:0;
       overflow:hidden;
@@ -201,72 +203,78 @@
       background:var(--head);
       border-bottom:1px solid var(--line);
     }
+    /* グリッド定義：# | ID | Btn | PIN | Btn */
     .tr{
       display:grid;
       grid-template-columns: var(--colNum) var(--colId) var(--colBtn) var(--colPin) var(--colBtn);
       align-items:center;
       gap:0;
-      padding:10px 10px;
+      padding:8px 8px; /* 少し詰め気味に */
       border-bottom:1px solid var(--line);
     }
     .thead .tr{
-      padding:10px 10px;
+      padding:8px 8px;
       font-weight:900;
       color:#334155;
-      font-size:14px;
+      font-size:13px;
+      text-align:center; /* ヘッダは中央寄せ */
     }
-    .tbody .tr{ background:var(--card); }
+    /* ヘッダの文字位置調整 */
+    .thead .tr > div:nth-child(2) { text-align:left; padding-left:4px; } /* ID */
+    .thead .tr > div:nth-child(4) { text-align:left; padding-left:4px; } /* PIN */
+
+    .tbody .tr{
+      background:var(--card);
+    }
     .tbody .tr:last-child{border-bottom:none;}
 
     /* #列（バッジ + 背景ゴースト数字） */
     .numCell{
       position:relative;
-      height:52px;
+      height:48px;
       display:flex;
       align-items:center;
       justify-content:center;
-      overflow:visible;
     }
     .numBadge{
-      width:34px;height:34px;
+      width:28px;height:28px; /* 少し小さく */
       display:grid;
       place-items:center;
       border-radius:999px;
       background:var(--chip);
       border:1px solid var(--chipLine);
       font-weight:900;
+      font-size:13px;
       color:#0f172a;
       z-index:2;
     }
     .ghost{
       position:absolute;
-      top:50%;
-      left:2px; /* ← 少し左に寄せて、バッジに隠れないように */
-      transform:translateY(-50%);
+      inset:0;
+      display:grid;
+      place-items:center;
       font-weight:1000;
-      font-size:var(--ghostSize);
+      font-size:32px;
       letter-spacing:-.04em;
       z-index:1;
       pointer-events:none;
-      opacity:var(--ghostAlpha);
+      opacity:var(--ghostAlpha); /* 濃く設定 */
+      transform:translateY(1px);
       filter:saturate(1.2);
-      line-height:1;
-      width:100%;
-      text-align:left;
     }
 
     /* 値セル（入力/表示） */
     .valCell{
-      padding:0 8px;
+      padding:0 4px;
       min-width:0;
     }
     .field{
       width:100%;
       border:1px solid transparent;
       background:transparent;
-      padding:12px 10px;
-      border-radius:14px;
-      font-size:22px;
+      padding:8px 6px;
+      border-radius:10px;
+      font-size:18px; /* 少し小さくして一覧性を高める */
       font-weight:900;
       outline:none;
       min-width:0;
@@ -275,39 +283,42 @@
     .field:focus{
       background:#f8fafc;
       border-color:var(--focus);
-      box-shadow:0 0 0 4px rgba(199,210,254,.35);
+      box-shadow:0 0 0 3px rgba(199,210,254,.35);
     }
 
-    /* 入力シート：コピーボタン（復活） */
+    /* コピーボタン（入力シートのみ） */
     .copyBtn{
-      width:52px;height:44px;
+      width:40px;height:40px;
       margin:0 auto;
-      border-radius:14px;
+      border-radius:12px;
       border:1px solid #dbeafe;
-      background:#eef2ff;
+      background:#f0f5ff; /* 少し色を濃く */
       display:grid;
       place-items:center;
-      font-size:13px;
-      font-weight:1000;
+      font-size:18px;
       user-select:none;
       -webkit-tap-highlight-color:transparent;
-      transition:transform .05s ease, filter .15s ease;
+      transition:transform .05s ease, background .15s ease;
+      cursor:pointer;
     }
-    .copyBtn:active{transform:scale(.98);}
+    .copyBtn:active{transform:scale(.92); background:#dbeafe;}
     .copyBtn.disabled{
-      opacity:.35;
-      filter:grayscale(.3);
+      opacity:.3;
+      filter:grayscale(1);
       pointer-events:none;
+      border-color:transparent;
+      background:transparent;
     }
 
-    /* コピーシート：セルタップでコピー（ボタン無し） */
+    /* コピーシート：ボタン無しレイアウト */
     .copyMode .tr{
+      /* コピーシートはボタン列なし */
       grid-template-columns: var(--colNum) var(--colId) var(--colPin);
     }
     .copyMode .copyTap{
-      border-radius:14px;
-      padding:12px 10px;
-      font-size:22px;
+      border-radius:12px;
+      padding:10px 8px;
+      font-size:20px;
       font-weight:900;
       user-select:none;
       -webkit-tap-highlight-color:transparent;
@@ -316,9 +327,11 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
-    .copyMode .copyTap:active{ background:#eef2ff; }
+    .copyMode .copyTap:active{
+      background:#eef2ff;
+    }
 
-    /* コピー強調（薄い青） */
+    /* どのセルがコピーされたかの強調 */
     .copied{
       background:var(--copiedBg) !important;
       box-shadow:inset 0 0 0 2px var(--copiedLine);
@@ -328,8 +341,8 @@
     .nav{
       position:fixed;
       left:0; right:0; bottom:0;
-      padding:10px 12px 18px;
-      background:rgba(245,247,251,.92);
+      padding:8px 12px 18px;
+      background:rgba(245,247,251,.95);
       backdrop-filter:saturate(180%) blur(12px);
       border-top:1px solid var(--line);
       z-index:40;
@@ -342,9 +355,9 @@
       gap:12px;
     }
     .navBtn{
-      border-radius:22px;
-      padding:16px 16px;
-      font-size:20px;
+      border-radius:18px;
+      padding:14px 16px;
+      font-size:18px;
       font-weight:1000;
       border:1px solid var(--line);
       background:var(--card);
@@ -363,11 +376,11 @@
       position:fixed;
       left:50%;
       transform:translateX(-50%);
-      bottom:92px;
+      bottom:90px;
       background:#0b1220;
       color:white;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:10px 14px;
+      border-radius:12px;
       font-weight:900;
       opacity:0;
       pointer-events:none;
@@ -375,6 +388,7 @@
       z-index:60;
       max-width:min(92vw,520px);
       text-align:center;
+      font-size:14px;
     }
     .toast.show{
       opacity:1;
@@ -383,12 +397,11 @@
 
     @media (max-width:520px){
       :root{
-        --colNum:38px;
-        --colBtn:52px;
+        --colNum:44px; /* スマホでより狭く */
+        --colBtn:48px;
       }
-      .field{font-size:20px;}
-      .copyMode .copyTap{font-size:20px;}
-      .copyBtn{width:48px;}
+      .field{font-size:18px;}
+      .copyMode .copyTap{font-size:18px;}
     }
   </style>
 </head>
@@ -431,12 +444,18 @@
 (() => {
   "use strict";
 
+  // =========================
+  // 設定
+  // =========================
   const MAX_ROWS = 200;
-  const LS_KEY_DATA = "idpin_data_v3";
-  const LS_KEY_HIST = "idpin_hist_v3";
+  const LS_KEY_DATA = "idpin_data_v4"; // バージョン変えておく
+  const LS_KEY_HIST = "idpin_hist_v4";
 
+  // =========================
+  // 状態
+  // =========================
   const state = {
-    screen: "input",
+    screen: "input", // "input" | "copy"
     rows: [],
     history: { undo: [], redo: [] },
     lastCopiedEl: null,
@@ -451,22 +470,25 @@
     return a;
   }
 
+  // =========================
+  // DOM
+  // =========================
   const $ = (sel, root=document) => root.querySelector(sel);
-
   const content = $("#content");
   const screenTitle = $("#screenTitle");
   const countLabel = $("#countLabel");
   const toast = $("#toast");
-
   const btnSave = $("#btnSave");
   const btnLoad = $("#btnLoad");
   const btnClear = $("#btnClear");
   const btnUndo = $("#btnUndo");
   const btnRedo = $("#btnRedo");
-
   const navInput = $("#navInput");
   const navCopy  = $("#navCopy");
 
+  // =========================
+  // ユーティリティ
+  // =========================
   function activeCount(){
     return state.rows.filter(r => (r.id || r.pin)).length;
   }
@@ -490,16 +512,12 @@
       ta.value = text;
       ta.style.position = "fixed";
       ta.style.left = "-9999px";
-      ta.style.top = "0";
       document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
+      ta.focus();ta.select();
       const ok = document.execCommand("copy");
       document.body.removeChild(ta);
       return ok;
-    }catch(e){
-      return false;
-    }
+    }catch(e){ return false; }
   }
 
   function setCopiedHighlight(el){
@@ -508,7 +526,6 @@
     }
     el.classList.add("copied");
     state.lastCopiedEl = el;
-
     clearTimeout(state.lastCopiedTimer);
     state.lastCopiedTimer = setTimeout(() => {
       if(state.lastCopiedEl){
@@ -519,21 +536,23 @@
   }
 
   function ghostColor(editCount){
-    const palette = ["#2563eb","#7c3aed","#db2777","#ea580c","#16a34a","#0891b2","#b45309","#334155"];
+    const palette = [
+      "#2563eb", "#7c3aed", "#db2777", "#ea580c",
+      "#16a34a", "#0891b2", "#b45309", "#334155"
+    ];
     return palette[Math.abs(editCount) % palette.length];
   }
 
   function deepCloneRows(rows){
-    return rows.map(r => ({
-      id: r.id,
-      pin: r.pin,
-      editCount: r.editCount,
-      lastCommittedId: r.lastCommittedId
-    }));
+    return rows.map(r => ({...r}));
   }
 
   function pushHistory(reason){
-    state.history.undo.push({ t: Date.now(), reason, rows: deepCloneRows(state.rows) });
+    state.history.undo.push({
+      t: Date.now(),
+      reason,
+      rows: deepCloneRows(state.rows)
+    });
     state.history.redo = [];
     syncUndoRedoButtons();
     saveHistoryToLS();
@@ -548,7 +567,10 @@
 
   function saveHistoryToLS(){
     try{
-      const slim = { undo: state.history.undo.slice(-60), redo: state.history.redo.slice(-60) };
+      const slim = {
+        undo: state.history.undo.slice(-60),
+        redo: state.history.redo.slice(-60)
+      };
       localStorage.setItem(LS_KEY_HIST, JSON.stringify(slim));
     }catch(e){}
   }
@@ -558,9 +580,9 @@
       const raw = localStorage.getItem(LS_KEY_HIST);
       if(!raw) return;
       const obj = JSON.parse(raw);
-      if(obj && Array.isArray(obj.undo) && Array.isArray(obj.redo)){
+      if(obj && Array.isArray(obj.undo)){
         state.history.undo = obj.undo;
-        state.history.redo = obj.redo;
+        state.history.redo = obj.redo || [];
       }
     }catch(e){}
   }
@@ -570,37 +592,35 @@
     btnRedo.disabled = state.history.redo.length === 0;
   }
 
+  // =========================
+  // 保存/読込
+  // =========================
   function saveToLS(){
     try{
-      const payload = { v:3, savedAt: Date.now(), rows: deepCloneRows(state.rows) };
+      const payload = { v:4, savedAt: Date.now(), rows: deepCloneRows(state.rows) };
       localStorage.setItem(LS_KEY_DATA, JSON.stringify(payload));
       showToast("保存しました");
-    }catch(e){
-      showToast("保存に失敗");
-    }
+    }catch(e){ showToast("保存失敗"); }
   }
 
   function loadFromLS(){
     try{
       const raw = localStorage.getItem(LS_KEY_DATA);
-      if(!raw){ showToast("保存データなし"); return; }
+      if(!raw){ showToast("データなし"); return; }
       const payload = JSON.parse(raw);
       if(!payload || !Array.isArray(payload.rows)){ showToast("読込失敗"); return; }
-
       pushHistory("load");
       state.rows = makeEmptyRows();
       for(let i=0;i<Math.min(MAX_ROWS, payload.rows.length);i++){
         const r = payload.rows[i];
-        state.rows[i].id = (r.id ?? "");
-        state.rows[i].pin = (r.pin ?? "");
-        state.rows[i].editCount = (r.editCount ?? 0);
-        state.rows[i].lastCommittedId = (r.lastCommittedId ?? state.rows[i].id);
+        state.rows[i].id = r.id ?? "";
+        state.rows[i].pin = r.pin ?? "";
+        state.rows[i].editCount = r.editCount ?? 0;
+        state.rows[i].lastCommittedId = r.lastCommittedId ?? state.rows[i].id;
       }
       render();
       showToast("読込しました");
-    }catch(e){
-      showToast("読込に失敗");
-    }
+    }catch(e){ showToast("読込失敗"); }
   }
 
   function clearAll(){
@@ -610,52 +630,42 @@
     showToast("全削除しました");
   }
 
-  function parsePasted(text){
+  // =========================
+  // 入力処理
+  // =========================
+  function applyPasted(text){
     const lines = (text || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    const out = [];
+    const parsed = [];
     for(const line of lines){
       const parts = line.split(/\s+/);
-      const id = parts[0] ?? "";
-      const pin = parts[1] ?? "";
-      if(id || pin) out.push({id, pin});
+      if(parts[0] || parts[1]) parsed.push({id:parts[0]||"", pin:parts[1]||""});
     }
-    return out;
-  }
-
-  function applyPasted(text){
-    const parsed = parsePasted(text);
     pushHistory("apply_paste");
-
     state.rows = makeEmptyRows();
     for(let i=0;i<Math.min(MAX_ROWS, parsed.length);i++){
       state.rows[i].id = parsed[i].id;
       state.rows[i].pin = parsed[i].pin;
-      state.rows[i].editCount = 0;
       state.rows[i].lastCommittedId = parsed[i].id;
     }
     render();
-    showToast("貼り付け反映しました");
+    showToast("反映しました");
   }
 
   function buildTSV(){
-    const rows = state.rows.filter(r => (r.id || r.pin));
-    return rows.map(r => `${r.id}\t${r.pin}`).join("\n");
+    return state.rows.filter(r => r.id || r.pin).map(r => `${r.id}\t${r.pin}`).join("\n");
   }
-
   async function copyTSV(){
     const tsv = buildTSV();
     if(!tsv){ showToast("データなし"); return; }
     const ok = await copyText(tsv);
-    showToast(ok ? "TSVをコピーしました" : "コピー失敗");
+    showToast(ok ? "TSVコピー完了" : "失敗");
   }
 
   function commitIdEdit(rowIndex, newId){
     const r = state.rows[rowIndex];
-    const prevCommitted = r.lastCommittedId ?? "";
-    const next = newId ?? "";
-    if(next !== prevCommitted){
+    if(newId !== (r.lastCommittedId ?? "")){
       r.editCount = (r.editCount ?? 0) + 1;
-      r.lastCommittedId = next;
+      r.lastCommittedId = newId;
     }
   }
 
@@ -671,68 +681,61 @@
     });
   }
 
-  function undo(){
-    if(state.history.undo.length === 0) return;
-    const snap = state.history.undo.pop();
-    state.history.redo.push({ t: Date.now(), reason:"redo_from_undo", rows: deepCloneRows(state.rows) });
-    saveHistoryToLS();
-    applySnapshot(snap, "undo");
-  }
+  function undo(){ if(state.history.undo.length){
+    state.history.redo.push({ t:Date.now(), reason:"redo", rows:deepCloneRows(state.rows) });
+    applySnapshot(state.history.undo.pop(), "undo");
+  }}
+  function redo(){ if(state.history.redo.length){
+    state.history.undo.push({ t:Date.now(), reason:"undo", rows:deepCloneRows(state.rows) });
+    applySnapshot(state.history.redo.pop(), "redo");
+  }}
 
-  function redo(){
-    if(state.history.redo.length === 0) return;
-    const snap = state.history.redo.pop();
-    state.history.undo.push({ t: Date.now(), reason:"undo_from_redo", rows: deepCloneRows(state.rows) });
-    saveHistoryToLS();
-    applySnapshot(snap, "redo");
-  }
-
+  // =========================
+  // レンダリング
+  // =========================
   function render(){
     screenTitle.textContent = (state.screen === "input") ? "入力" : "コピー";
     countLabel.textContent = `件数：${activeCount()}`;
-
     navInput.classList.toggle("active", state.screen === "input");
     navCopy.classList.toggle("active", state.screen === "copy");
 
     content.innerHTML = "";
-    if(state.screen === "input"){
-      content.appendChild(renderInputScreen());
-    }else{
-      content.appendChild(renderCopyScreen());
-    }
+    content.appendChild(state.screen === "input" ? renderInputScreen() : renderCopyScreen());
   }
 
   function renderInputScreen(){
     const wrap = document.createElement("div");
     wrap.className = "pasteWrap";
 
+    // 貼り付けエリア
     const c1 = document.createElement("div");
     c1.className = "card";
     c1.innerHTML = `
       <div class="pasteLabel">入力（貼り付け → 反映）</div>
-      <textarea id="pasteArea" placeholder="例：VMA1069413711  8p7s@3WD"></textarea>
+      <textarea id="pasteArea"></textarea>
       <div class="actions2">
         <button class="btn primary" id="btnApply">貼り付け反映</button>
-        <button class="btn" id="btnCopyTSV">データをコピー（TSV）</button>
+        <button class="btn" id="btnCopyTSV">全データコピー(TSV)</button>
       </div>
     `;
     wrap.appendChild(c1);
 
+    // テーブル
     const table = document.createElement("div");
     table.className = "card tableCard";
 
+    // ヘッダ：# | ID | Btn | PIN | Btn
     const thead = document.createElement("div");
     thead.className = "thead";
-    const trh = document.createElement("div");
-    trh.className = "tr";
-    trh.innerHTML = `
-      <div>#</div>
-      <div>ID</div>
-      <div></div>
-      <div>PIN</div>
-      <div></div>
+    thead.innerHTML = `
+      <div class="tr">
+        <div>#</div>
+        <div>ID</div>
+        <div></div>
+        <div>PIN</div>
+        <div></div>
+      </div>
     `;
-    thead.appendChild(trh);
     table.appendChild(thead);
 
     const tbody = document.createElement("div");
@@ -740,62 +743,46 @@
 
     for(let i=0;i<MAX_ROWS;i++){
       const r = state.rows[i];
-
       const tr = document.createElement("div");
       tr.className = "tr";
-      tr.dataset.idx = String(i);
 
+      // #
       const num = document.createElement("div");
       num.className = "numCell";
-      const badge = document.createElement("div");
-      badge.className = "numBadge";
-      badge.textContent = String(i+1);
+      num.innerHTML = `
+        <div class="ghost" style="color:${ghostColor(r.editCount)}">${r.editCount}</div>
+        <div class="numBadge">${i+1}</div>
+      `;
 
-      const ghost = document.createElement("div");
-      ghost.className = "ghost";
-      ghost.textContent = String(r.editCount ?? 0);
-      ghost.style.color = ghostColor(r.editCount ?? 0);
-
-      num.appendChild(ghost);
-      num.appendChild(badge);
-
+      // ID
       const idCell = document.createElement("div");
       idCell.className = "valCell";
       const idInput = document.createElement("input");
       idInput.className = "field";
-      idInput.type = "text";
-      idInput.autocapitalize = "off";
-      idInput.autocomplete = "off";
-      idInput.spellcheck = false;
       idInput.value = r.id || "";
       idInput.dataset.role = "id";
       attachSelectAllBehavior(idInput);
       idCell.appendChild(idInput);
 
+      // CopyBtn (ID)
+      const idCopy = document.createElement("div");
+      idCopy.className = "copyBtn";
+      idCopy.innerHTML = "📋";
+      if(!r.id) idCopy.classList.add("disabled");
+
+      // PIN
       const pinCell = document.createElement("div");
       pinCell.className = "valCell";
       const pinInput = document.createElement("input");
       pinInput.className = "field";
-      pinInput.type = "text";
-      pinInput.autocapitalize = "off";
-      pinInput.autocomplete = "off";
-      pinInput.spellcheck = false;
       pinInput.value = r.pin || "";
-      pinInput.dataset.role = "pin";
       attachSelectAllBehavior(pinInput);
       pinCell.appendChild(pinInput);
 
-      /* 入力シート：コピーボタン（復活） */
-      const idCopy = document.createElement("div");
-      idCopy.className = "copyBtn";
-      idCopy.textContent = "コピー";
-
+      // CopyBtn (PIN)
       const pinCopy = document.createElement("div");
       pinCopy.className = "copyBtn";
-      pinCopy.textContent = "コピー";
-
-      /* 反映していない（空）の状態ではコピー不可 */
-      if(!r.id) idCopy.classList.add("disabled");
+      pinCopy.innerHTML = "📋";
       if(!r.pin) pinCopy.classList.add("disabled");
 
       tr.appendChild(num);
@@ -805,68 +792,37 @@
       tr.appendChild(pinCopy);
       tbody.appendChild(tr);
 
-      idInput.addEventListener("blur", () => {
+      // イベント
+      idInput.onblur = () => {
         const nv = idInput.value.trim();
-        const was = state.rows[i].id || "";
-        if(nv !== was){
+        if(nv !== (state.rows[i].id||"")){
           pushHistory("edit_id");
           state.rows[i].id = nv;
           commitIdEdit(i, nv);
-
-          ghost.textContent = String(state.rows[i].editCount ?? 0);
-          ghost.style.color = ghostColor(state.rows[i].editCount ?? 0);
-
-          idCopy.classList.toggle("disabled", !nv);
-          countLabel.textContent = `件数：${activeCount()}`;
+          render(); // 再描画(ghost更新のため)
         }
-      });
-
-      pinInput.addEventListener("blur", () => {
+      };
+      pinInput.onblur = () => {
         const nv = pinInput.value.trim();
-        const was = state.rows[i].pin || "";
-        if(nv !== was){
+        if(nv !== (state.rows[i].pin||"")){
           pushHistory("edit_pin");
           state.rows[i].pin = nv;
-
-          pinCopy.classList.toggle("disabled", !nv);
-          countLabel.textContent = `件数：${activeCount()}`;
+          render();
         }
-      });
-
-      idCopy.addEventListener("click", async () => {
-        const v = state.rows[i].id || "";
-        if(!v) return;
-        const ok = await copyText(v);
-        if(ok){
-          setCopiedHighlight(idCell);
-          showToast("IDをコピーしました");
-        }else{
-          showToast("コピー失敗");
-        }
-      });
-
-      pinCopy.addEventListener("click", async () => {
-        const v = state.rows[i].pin || "";
-        if(!v) return;
-        const ok = await copyText(v);
-        if(ok){
-          setCopiedHighlight(pinCell);
-          showToast("PINをコピーしました");
-        }else{
-          showToast("コピー失敗");
-        }
-      });
+      };
+      idCopy.onclick = async () => {
+        if(await copyText(r.id)) { setCopiedHighlight(idCell); showToast("IDコピー"); }
+      };
+      pinCopy.onclick = async () => {
+        if(await copyText(r.pin)) { setCopiedHighlight(pinCell); showToast("PINコピー"); }
+      };
     }
-
     table.appendChild(tbody);
     wrap.appendChild(table);
 
-    const pasteArea = c1.querySelector("#pasteArea");
-    const btnApply = c1.querySelector("#btnApply");
-    const btnCopy = c1.querySelector("#btnCopyTSV");
-
-    btnApply.addEventListener("click", () => applyPasted(pasteArea.value));
-    btnCopy.addEventListener("click", () => copyTSV());
+    // イベント割り当て
+    c1.querySelector("#btnApply").onclick = () => applyPasted(c1.querySelector("#pasteArea").value);
+    c1.querySelector("#btnCopyTSV").onclick = copyTSV;
 
     return wrap;
   }
@@ -874,140 +830,72 @@
   function renderCopyScreen(){
     const wrap = document.createElement("div");
     wrap.className = "copyMode";
-
-    const table = document.createElement("div");
-    table.className = "card tableCard";
-
-    const thead = document.createElement("div");
-    thead.className = "thead";
-    const trh = document.createElement("div");
-    trh.className = "tr";
-    trh.innerHTML = `
-      <div>#</div>
-      <div>ID</div>
-      <div>PIN</div>
-    `;
-    thead.appendChild(trh);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("div");
-    tbody.className = "tbody";
-
-    const rows = state.rows
-      .map((r, idx) => ({...r, idx}))
-      .filter(x => (x.id || x.pin));
-
-    if(rows.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "card";
-      empty.style.textAlign = "center";
-      empty.style.color = "#64748b";
-      empty.style.fontWeight = "900";
-      empty.textContent = "データがありません（入力で貼り付け反映してください）";
-      wrap.appendChild(empty);
+    
+    const rows = state.rows.map((r,i)=>({...r,i})).filter(r => r.id || r.pin);
+    if(!rows.length){
+      wrap.innerHTML = `<div class="card" style="text-align:center;padding:20px;color:#64748b;font-weight:900">データがありません</div>`;
       return wrap;
     }
 
-    for(const x of rows){
+    const table = document.createElement("div");
+    table.className = "card tableCard";
+    table.innerHTML = `<div class="thead"><div class="tr"><div>#</div><div>ID</div><div>PIN</div></div></div>`;
+    
+    const tbody = document.createElement("div");
+    tbody.className = "tbody";
+
+    rows.forEach(x => {
       const tr = document.createElement("div");
       tr.className = "tr";
-
+      
       const num = document.createElement("div");
       num.className = "numCell";
-      const badge = document.createElement("div");
-      badge.className = "numBadge";
-      badge.textContent = String(x.idx + 1);
-
-      const ghost = document.createElement("div");
-      ghost.className = "ghost";
-      ghost.textContent = String(x.editCount ?? 0);
-      ghost.style.color = ghostColor(x.editCount ?? 0);
-
-      num.appendChild(ghost);
-      num.appendChild(badge);
+      num.innerHTML = `
+        <div class="ghost" style="color:${ghostColor(x.editCount)}">${x.editCount}</div>
+        <div class="numBadge">${x.i+1}</div>
+      `;
 
       const idTap = document.createElement("div");
       idTap.className = "copyTap";
-      idTap.textContent = x.id || "";
+      idTap.textContent = x.id;
+      idTap.onclick = async () => {
+        if(await copyText(x.id)){ setCopiedHighlight(idTap); showToast("IDコピー"); }
+      };
 
       const pinTap = document.createElement("div");
       pinTap.className = "copyTap";
-      pinTap.textContent = x.pin || "";
-
-      idTap.addEventListener("click", async () => {
-        const v = x.id || "";
-        if(!v) return;
-        const ok = await copyText(v);
-        if(ok){
-          setCopiedHighlight(idTap);
-          showToast("IDをコピーしました");
-        }else{
-          showToast("コピー失敗");
-        }
-      });
-
-      pinTap.addEventListener("click", async () => {
-        const v = x.pin || "";
-        if(!v) return;
-        const ok = await copyText(v);
-        if(ok){
-          setCopiedHighlight(pinTap);
-          showToast("PINをコピーしました");
-        }else{
-          showToast("コピー失敗");
-        }
-      });
+      pinTap.textContent = x.pin;
+      pinTap.onclick = async () => {
+        if(await copyText(x.pin)){ setCopiedHighlight(pinTap); showToast("PINコピー"); }
+      };
 
       tr.appendChild(num);
       tr.appendChild(idTap);
       tr.appendChild(pinTap);
       tbody.appendChild(tr);
-    }
+    });
 
     table.appendChild(tbody);
     wrap.appendChild(table);
     return wrap;
   }
 
-  function go(screen){
-    if(state.screen === screen) return;
-    state.screen = screen;
-    render();
-  }
+  // Init
+  btnSave.onclick = saveToLS;
+  btnLoad.onclick = loadFromLS;
+  btnClear.onclick = clearAll;
+  btnUndo.onclick = undo;
+  btnRedo.onclick = redo;
+  navInput.onclick = () => { state.screen="input"; render(); };
+  navCopy.onclick = () => { state.screen="copy"; render(); };
 
-  btnSave.addEventListener("click", saveToLS);
-  btnLoad.addEventListener("click", loadFromLS);
-  btnClear.addEventListener("click", clearAll);
-  btnUndo.addEventListener("click", undo);
-  btnRedo.addEventListener("click", redo);
-  navInput.addEventListener("click", () => go("input"));
-  navCopy.addEventListener("click", () => go("copy"));
+  loadHistoryFromLS();
+  // 自動ロード
+  try{
+    const raw = localStorage.getItem(LS_KEY_DATA);
+    if(raw) loadFromLS(); else render();
+  }catch(e){ render(); }
 
-  function init(){
-    state.rows = makeEmptyRows();
-    loadHistoryFromLS();
-
-    try{
-      const raw = localStorage.getItem(LS_KEY_DATA);
-      if(raw){
-        const payload = JSON.parse(raw);
-        if(payload && Array.isArray(payload.rows)){
-          for(let i=0;i<Math.min(MAX_ROWS, payload.rows.length);i++){
-            const r = payload.rows[i];
-            state.rows[i].id = (r.id ?? "");
-            state.rows[i].pin = (r.pin ?? "");
-            state.rows[i].editCount = (r.editCount ?? 0);
-            state.rows[i].lastCommittedId = (r.lastCommittedId ?? state.rows[i].id);
-          }
-        }
-      }
-    }catch(e){}
-
-    syncUndoRedoButtons();
-    render();
-  }
-
-  init();
 })();
 </script>
 </body>
