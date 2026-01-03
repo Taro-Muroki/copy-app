@@ -2,580 +2,831 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>ID / PIN</title>
+
   <style>
     :root{
       --bg:#f6f7f9;
       --card:#ffffff;
-      --text:#101828;
-      --muted:#667085;
+      --text:#111827;
+      --muted:#6b7280;
       --line:#e5e7eb;
-      --head:#f2f4f7;
-
-      /* コピー成功の強調（濃いめ） */
-      --flash-bg:#0ea5e9;
-      --flash-text:#ffffff;
-      --flash-outline:#0284c7;
+      --head:#f3f4f6;
 
       --btn:#111827;
       --btnText:#ffffff;
-      --btnSub:#ffffff;
-      --danger:#ef4444;
+      --btnSub:#eef2ff;
+      --btnSubText:#1f2937;
 
-      --radius:14px;
-      --shadow:0 8px 24px rgba(16,24,40,.08);
+      --danger:#fee2e2;
+      --dangerText:#7f1d1d;
+
+      /* コピー強調（濃い） */
+      --flash:#111827;
+      --flashText:#ffffff;
+      --flashOutline:#111827;
+
+      /* #列 背景数字の濃さ */
+      --ghostOpacity:0.11;
     }
 
-    *{ box-sizing:border-box; }
-    html, body{
-      height:100%;
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
+    body{
       margin:0;
-      padding:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Sans","Noto Sans JP","Apple Color Emoji","Segoe UI Emoji";
       background:var(--bg);
       color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
-      overscroll-behavior-y: contain;
-      overflow-x:hidden;              /* 横スクロール殺す */
-      touch-action: pan-y;            /* 触りは上下だけ */
+      overscroll-behavior-y:contain;
     }
 
-    /* 画面全体 */
-    .app{
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-      padding: env(safe-area-inset-top) 14px calc(80px + env(safe-area-inset-bottom)) 14px;
-      gap:12px;
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:12px 12px calc(84px + env(safe-area-inset-bottom));
     }
 
     .topbar{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:12px 12px 10px;
-    }
-    .titleRow{
       display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
       gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky;
+      top:0;
+      z-index:10;
+      padding:10px 0;
+      background:linear-gradient(to bottom, var(--bg) 70%, rgba(246,247,249,0));
+      backdrop-filter:saturate(140%) blur(8px);
     }
-    h1{
-      font-size:18px;
-      line-height:1.2;
-      margin:0;
-      letter-spacing:.2px;
+
+    .topbar .left, .topbar .right{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
     }
-    .count{
-      font-size:12px;
-      color:var(--muted);
-      white-space:nowrap;
+
+    button{
+      appearance:none;
+      border:1px solid transparent;
+      background:var(--btn);
+      color:var(--btnText);
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
+      font-size:14px;
+      line-height:1;
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
     }
+    button.secondary{
+      background:var(--btnSub);
+      color:var(--btnSubText);
+      border-color:#c7d2fe;
+      font-weight:800;
+    }
+    button.danger{
+      background:var(--danger);
+      color:var(--dangerText);
+      border-color:#fecaca;
+      font-weight:900;
+    }
+    button.icon{
+      width:40px;
+      padding:10px 0;
+      text-align:center;
+      font-size:16px;
+    }
+    button:disabled{opacity:.40; cursor:not-allowed;}
 
     .card{
       background:var(--card);
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+      border-radius:16px;
+      padding:12px;
     }
+    .stack{display:grid; gap:12px;}
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      padding:10px;
-      border-bottom:1px solid var(--line);
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .btn{
-      border:0;
-      border-radius:12px;
-      padding:10px 12px;
-      font-size:14px;
-      font-weight:700;
-      background:var(--btn);
-      color:var(--btnText);
-      cursor:pointer;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btnSub{
-      background:#eef2ff;
-      color:#1f2937;
-      font-weight:700;
-    }
-    .btnDanger{
-      background:#fee2e2;
-      color:#7f1d1d;
-      font-weight:800;
-    }
-
-    /* 入力用（貼り付け） */
-    .pasteWrap{
-      padding:10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .pasteLabel{
-      font-size:12px;
-      color:var(--muted);
-    }
     textarea{
       width:100%;
       min-height:120px;
       resize:vertical;
-      font-size:14px;
-      padding:10px 12px;
       border:1px solid var(--line);
-      border-radius:12px;
+      border-radius:14px;
+      padding:12px;
+      font-size:15px;
+      line-height:1.4;
       outline:none;
       background:#fff;
     }
-    textarea:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 3px rgba(59,130,246,.15);
-    }
-    .rowBtns{
+    textarea:focus{border-color:#c7d2fe; box-shadow:0 0 0 3px rgba(99,102,241,.15);}
+
+    .row{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
     }
+    .row .btns{display:flex; gap:10px; flex-wrap:wrap;}
 
-    /* 表（横スクロール無し） */
-    .tableWrap{
-      overflow:hidden;                /* 横方向のはみ出しを隠す */
-    }
-    table{
+    /* ===== テーブル（横スクロール無し） ===== */
+    .table{
       width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      table-layout:fixed;             /* 横幅固定＝横スクロール出にくい */
-    }
-    thead th{
-      background:var(--head);
-      font-size:12px;
-      color:#111827;
-      text-align:left;
-      padding:10px 10px;
-      border-bottom:1px solid var(--line);
-      white-space:nowrap;
-    }
-    tbody td{
-      padding:12px 10px;
-      border-bottom:1px solid var(--line);
-      font-size:15px;
-      line-height:1.15;
-      vertical-align:middle;
-      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
       overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;             /* まずは折り返さず */
+      background:#fff;
     }
-    tbody tr:last-child td{ border-bottom:0; }
+    .thead, .tr{
+      display:grid;
+      grid-template-columns: 40px 1fr 32px 0.85fr 32px; /* # / ID / copy / PIN / copy */
+      align-items:center;
+    }
+    .thead{
+      background:var(--head);
+      border-bottom:1px solid var(--line);
+      font-size:12px;
+      color:#374151;
+      font-weight:900;
+    }
+    .thead div{padding:10px 10px;}
+    .tr{
+      border-bottom:1px solid var(--line);
+      min-height:54px;
+    }
+    .tr:last-child{border-bottom:none;}
+    .cell{padding:10px 10px; min-width:0;}
 
-    /* 列幅（#は固定、ID/PINは均等） */
-    .colNo{ width:52px; }
-    .colId{ width:auto; }
-    .colPin{ width:auto; }
-
-    /* タップできるセル */
-    .tap{
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-      border-radius:10px;
+    /* #列：狭い＋背景に薄い数字 */
+    .numCell{
+      position:relative;
+      padding:0;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      color:#111827;
+      z-index:1;
+    }
+    .numCell .numFront{
+      position:relative;
+      z-index:2;
+      font-size:14px;
+    }
+    .numCell .ghost{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:28px;
+      letter-spacing:-0.02em;
+      opacity:var(--ghostOpacity);
+      z-index:1;
+      pointer-events:none;
+      transform:translateY(1px);
     }
 
-    /* コピーしたセルだけ強調（単独） */
-    .flash{
-      background:var(--flash-bg) !important;
-      color:var(--flash-text) !important;
-      outline:2px solid var(--flash-outline);
-      outline-offset:-2px;
-      font-weight:800;
-    }
-
-    /* 入力タブで編集できるように見せる（Excelっぽく） */
-    .editable{
-      background:#fbfdff;
-    }
-    .editable input{
+    .idInput, .pinInput{
       width:100%;
-      border:0;
-      outline:none;
+      border:1px solid transparent;
       background:transparent;
       font-size:15px;
+      font-weight:800;
+      padding:8px 10px;
+      border-radius:12px;
+      outline:none;
+      min-width:0;
+    }
+    .pinInput{font-weight:900;}
+    .idInput:focus, .pinInput:focus{
+      border-color:#c7d2fe;
+      background:#fff;
+      box-shadow:0 0 0 3px rgba(99,102,241,.15);
+    }
+
+    .copyMini{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100%;
       padding:0;
       margin:0;
     }
-    .editable input::placeholder{
-      color:#c0c6d0;
+    .copyMini button{
+      width:28px;
+      height:28px;
+      padding:0;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:900;
+    }
+    .copyMini button.secondary{
+      background:#eef2ff;
+      border-color:#c7d2fe;
     }
 
-    /* 下タブ */
-    .tabs{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:0;
-      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
-      background:rgba(246,247,249,.92);
-      backdrop-filter:saturate(180%) blur(12px);
-      border-top:1px solid var(--line);
+    /* コピー時：セル単独で濃く */
+    .flashWrap{
+      background:var(--flash) !important;
+      color:var(--flashText) !important;
+    }
+    .flashWrap input{
+      color:var(--flashText) !important;
+      background:transparent !important;
+    }
+
+    /* ===== コピー画面（情報少なめ） ===== */
+    .simpleHeader{
       display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin:0 0 10px 0;
+      font-weight:900;
+    }
+    .simpleHeader .title{font-size:16px;}
+    .simpleHeader .count{font-size:12px; color:var(--muted); font-weight:900;}
+
+    /* 画面切替（下タブ） */
+    .tabbar{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(246,247,249,.92);
+      backdrop-filter:saturate(140%) blur(10px);
+      border-top:1px solid var(--line);
+    }
+    .tabs{
+      max-width:980px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:10px;
-      justify-content:center;
     }
     .tabBtn{
-      flex:1;
-      max-width:520px;
       border-radius:16px;
-      border:1px solid var(--line);
-      padding:12px 12px;
-      font-size:15px;
+      padding:14px 12px;
+      font-size:16px;
       font-weight:900;
-      background:#fff;
-      color:#111827;
-      cursor:pointer;
     }
-    .tabBtn.active{
-      background:#111827;
-      color:#fff;
-      border-color:#111827;
+    .tabBtn.secondary{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
     }
 
-    /* コピー完了トースト（濃く） */
     .toast{
       position:fixed;
       left:50%;
+      bottom:92px;
       transform:translateX(-50%);
-      bottom: calc(76px + env(safe-area-inset-bottom));
       background:#111827;
       color:#fff;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:10px 14px;
+      border-radius:999px;
       font-weight:900;
-      box-shadow:0 16px 40px rgba(0,0,0,.22);
+      font-size:13px;
       opacity:0;
       pointer-events:none;
-      transition:opacity .15s ease, transform .15s ease;
-      max-width:min(92vw,520px);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      transition:opacity .18s ease, transform .18s ease;
+      z-index:9999;
     }
     .toast.show{
       opacity:1;
       transform:translateX(-50%) translateY(-4px);
     }
 
-    /* セクション表示切り替え */
-    .hide{ display:none; }
+    @media (max-width:420px){
+      .thead, .tr{ grid-template-columns: 34px 1fr 28px 0.9fr 28px; }
+      .numCell .ghost{font-size:24px;}
+    }
   </style>
 </head>
+
 <body>
-  <div class="app">
-
+  <div class="wrap">
     <div class="topbar">
-      <div class="titleRow">
-        <h1>ID / PIN</h1>
-        <div class="count" id="count">件数：0</div>
+      <div class="left">
+        <button id="btnSave">保存</button>
+        <button id="btnLoad" class="secondary">読込</button>
+        <button id="btnClear" class="danger">全削除</button>
+      </div>
+      <div class="right">
+        <button id="btnUndo" class="secondary icon" title="戻る">←</button>
+        <button id="btnRedo" class="secondary icon" title="進む">→</button>
       </div>
     </div>
 
-    <!-- 入力（編集） -->
-    <div class="card" id="viewInput">
-      <div class="toolbar">
-        <button class="btn" id="btnSave">保存</button>
-        <button class="btn btnSub" id="btnLoad">読込</button>
-        <button class="btn btnDanger" id="btnClear">全削除</button>
-      </div>
-
-      <div class="pasteWrap">
-        <div class="pasteLabel">
-          ここに「ID<TAB>PIN」を複数行で貼り付け → 「貼り付け反映」<br>
-          ※Excel/スプレッドシートからそのままコピペOK
-        </div>
-        <textarea id="paste" placeholder="例：
-VMA1069...	8p7s@...
-VMA1070...	t7Sgn..."></textarea>
-        <div class="rowBtns">
-          <button class="btn" id="btnApply">貼り付け反映</button>
-          <button class="btn btnSub" id="btnExport">データをコピー（TSV）</button>
+    <!-- 入力画面 -->
+    <section id="viewInput" class="stack">
+      <div class="card stack">
+        <textarea id="pasteBox" placeholder="ここに『ID PIN』を複数行で貼り付け → 『貼り付け反映』"></textarea>
+        <div class="row">
+          <div class="btns">
+            <button id="btnApply">貼り付け反映</button>
+            <button id="btnCopyTSV" class="secondary">データをコピー（TSV）</button>
+          </div>
         </div>
       </div>
 
-      <div class="tableWrap">
-        <table>
-          <colgroup>
-            <col class="colNo">
-            <col class="colId">
-            <col class="colPin">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>ID</th>
-              <th>PIN</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyInput"></tbody>
-        </table>
+      <div class="card">
+        <div class="table">
+          <div class="thead">
+            <div>#</div>
+            <div>ID</div>
+            <div></div>
+            <div>PIN</div>
+            <div></div>
+          </div>
+          <div id="tbody"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- コピー（閲覧） -->
-    <div class="card hide" id="viewCopy">
-      <div class="tableWrap">
-        <table>
-          <colgroup>
-            <col class="colNo">
-            <col class="colId">
-            <col class="colPin">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>ID</th>
-              <th>PIN</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyCopy"></tbody>
-        </table>
+    <!-- コピー画面 -->
+    <section id="viewCopy" class="stack" style="display:none;">
+      <div class="card">
+        <div class="simpleHeader">
+          <div class="title">ID / PIN</div>
+          <div class="count" id="copyCount">件数：0</div>
+        </div>
+
+        <div class="table">
+          <div class="thead">
+            <div>#</div>
+            <div>ID</div>
+            <div></div>
+            <div>PIN</div>
+            <div></div>
+          </div>
+          <div id="tbodyCopy"></div>
+        </div>
       </div>
-    </div>
-
+    </section>
   </div>
 
-  <div class="tabs">
-    <button class="tabBtn active" id="tabInput">入力</button>
-    <button class="tabBtn" id="tabCopy">コピー</button>
+  <div class="tabbar">
+    <div class="tabs">
+      <button id="tabInput" class="tabBtn">入力</button>
+      <button id="tabCopy" class="tabBtn secondary">コピー</button>
+    </div>
   </div>
 
-  <div class="toast" id="toast">コピーしました</div>
+  <div id="toast" class="toast">コピーしました</div>
 
-  <script>
-    // =========================
-    // データ（最初は空でOK）
-    // =========================
-    // 形式: [{id:"...", pin:"..."}, ...]
-    let rows = [];
+<script>
+/* ==========
+  状態
+========== */
+const LS_KEY   = "copy_app_rows_index_only_v1";
+const LS_PASTE = "copy_app_paste_index_only_v1";
 
-    const LS_KEY = "copy_app_rows_v1";
+let rows = [];
+let undoStack = [];
+let redoStack = [];
+const UNDO_LIMIT = 50;
 
-    const elCount = document.getElementById("count");
-    const tbodyInput = document.getElementById("tbodyInput");
-    const tbodyCopy  = document.getElementById("tbodyCopy");
-    const toast = document.getElementById("toast");
+const el = (id) => document.getElementById(id);
 
-    // ---- UI切替
-    const viewInput = document.getElementById("viewInput");
-    const viewCopy  = document.getElementById("viewCopy");
-    const tabInput  = document.getElementById("tabInput");
-    const tabCopy   = document.getElementById("tabCopy");
+const viewInput = el("viewInput");
+const viewCopy  = el("viewCopy");
+const tabInput  = el("tabInput");
+const tabCopy   = el("tabCopy");
 
-    tabInput.addEventListener("click", () => switchView("input"));
-    tabCopy.addEventListener("click", () => switchView("copy"));
+const pasteBox  = el("pasteBox");
+const tbody     = el("tbody");
+const tbodyCopy = el("tbodyCopy");
 
-    function switchView(mode){
-      const isInput = (mode === "input");
-      viewInput.classList.toggle("hide", !isInput);
-      viewCopy.classList.toggle("hide", isInput);
-      tabInput.classList.toggle("active", isInput);
-      tabCopy.classList.toggle("active", !isInput);
-      // コピー画面は毎回描画（最新化）
-      render();
+const btnSave    = el("btnSave");
+const btnLoad    = el("btnLoad");
+const btnClear   = el("btnClear");
+const btnApply   = el("btnApply");
+const btnCopyTSV = el("btnCopyTSV");
+const btnUndo    = el("btnUndo");
+const btnRedo    = el("btnRedo");
+
+const copyCount  = el("copyCount");
+const toast      = el("toast");
+
+let toastTimer = null;
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove("show"), 900);
+}
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      return true;
+    }catch(err){
+      document.body.removeChild(ta);
+      return false;
+    }
+  }
+}
+
+/* ==========
+  Undo / Redo
+========== */
+function snapshot(){
+  return JSON.stringify({ rows, paste: pasteBox.value ?? "" });
+}
+function pushUndo(){
+  undoStack.push(snapshot());
+  if(undoStack.length > UNDO_LIMIT) undoStack.shift();
+  redoStack = [];
+  refreshUndoRedo();
+}
+function restoreFrom(json){
+  const obj = JSON.parse(json);
+  rows = Array.isArray(obj.rows) ? obj.rows : [];
+  pasteBox.value = obj.paste ?? "";
+  renderAll();
+  refreshUndoRedo();
+}
+function undo(){
+  if(!undoStack.length) return;
+  redoStack.push(snapshot());
+  const prev = undoStack.pop();
+  restoreFrom(prev);
+}
+function redo(){
+  if(!redoStack.length) return;
+  undoStack.push(snapshot());
+  const next = redoStack.pop();
+  restoreFrom(next);
+}
+function refreshUndoRedo(){
+  btnUndo.disabled = (undoStack.length === 0);
+  btnRedo.disabled = (redoStack.length === 0);
+}
+
+/* ==========
+  #列 背景数字の色
+========== */
+function ghostColorByCount(n){
+  if(n <= 0) return "#6b7280";   // グレー
+  if(n <= 3) return "#2563eb";   // 青
+  if(n <= 6) return "#16a34a";   // 緑
+  if(n <= 9) return "#ea580c";   // オレンジ
+  return "#dc2626";              // 赤
+}
+
+/* ==========
+  パース / TSV
+========== */
+function parseLinesToRows(text){
+  const out = [];
+  const lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  for(const line of lines){
+    const parts = line.split(/\s+/);
+    const id  = (parts[0] ?? "").trim();
+    const pin = (parts[1] ?? "").trim();
+    if(!id && !pin) continue;
+    out.push({ id, pin, editCount: 0 });
+  }
+  return out;
+}
+function toTSV(){
+  return rows.map(r => `${r.id}\t${r.pin}`).join("\n");
+}
+
+/* ==========
+  保存 / 読込 / 全削除
+========== */
+function save(){
+  localStorage.setItem(LS_KEY, JSON.stringify(rows));
+  localStorage.setItem(LS_PASTE, pasteBox.value ?? "");
+  showToast("保存しました");
+}
+function load(){
+  const s = localStorage.getItem(LS_KEY);
+  const p = localStorage.getItem(LS_PASTE);
+  rows = s ? JSON.parse(s) : [];
+  pasteBox.value = p ?? "";
+  renderAll();
+  showToast("読込しました");
+}
+function clearAll(){
+  pushUndo();
+  rows = [];
+  pasteBox.value = "";
+  renderAll();
+  showToast("全削除");
+}
+
+/* ==========
+  画面切替
+========== */
+function setView(which){
+  const isInput = (which === "input");
+  viewInput.style.display = isInput ? "" : "none";
+  viewCopy.style.display  = isInput ? "none" : "";
+
+  tabInput.classList.toggle("secondary", !isInput);
+  tabCopy.classList.toggle("secondary", isInput);
+}
+
+/* ==========
+  コピー強調（セル単独）
+========== */
+function flashCell(wrapper){
+  wrapper.classList.add("flashWrap");
+  setTimeout(()=>wrapper.classList.remove("flashWrap"), 520);
+}
+
+/* ==========
+  行レンダ（入力）
+========== */
+function renderRowInput(r, idx){
+  const tr = document.createElement("div");
+  tr.className = "tr";
+
+  // #列（前面番号 + 背景編集カウント）
+  const num = document.createElement("div");
+  num.className = "cell numCell";
+
+  const front = document.createElement("div");
+  front.className = "numFront";
+  front.textContent = String(idx + 1);
+
+  const ghost = document.createElement("div");
+  ghost.className = "ghost";
+  ghost.textContent = String(r.editCount ?? 0);
+  ghost.style.color = ghostColorByCount(Number(r.editCount ?? 0));
+
+  num.appendChild(ghost);
+  num.appendChild(front);
+
+  // ID
+  const idCell = document.createElement("div");
+  idCell.className = "cell";
+  const idInput = document.createElement("input");
+  idInput.className = "idInput";
+  idInput.value = r.id ?? "";
+  idInput.inputMode = "text";
+  idInput.autocapitalize = "none";
+  idInput.autocomplete = "off";
+  idInput.spellcheck = false;
+
+  // ★同値ならカウントしない（focus時にbeforeを保存、blurで比較）
+  let idBefore = idInput.value;
+  idInput.addEventListener("focus", ()=>{
+    idBefore = (idInput.value ?? "");
+  });
+  idInput.addEventListener("blur", ()=>{
+    const beforeTrim = (idBefore ?? "").trim();
+    const afterTrim  = (idInput.value ?? "").trim();
+
+    // 値の反映（文字そのものはtrimしない＝入力した通り保持）
+    const afterRaw = (idInput.value ?? "");
+    const prevRaw  = (rows[idx].id ?? "");
+    if(prevRaw !== afterRaw){
+      pushUndo();
+      rows[idx].id = afterRaw;
     }
 
-    // ---- 表描画
-    function render(){
-      elCount.textContent = `件数：${rows.length}`;
-
-      // 入力テーブル
-      tbodyInput.innerHTML = "";
-      rows.forEach((r, idx) => {
-        const tr = document.createElement("tr");
-
-        const tdNo = document.createElement("td");
-        tdNo.textContent = String(idx + 1);
-        tr.appendChild(tdNo);
-
-        const tdId = document.createElement("td");
-        tdId.className = "editable";
-        const inId = document.createElement("input");
-        inId.value = r.id ?? "";
-        inId.placeholder = "ID";
-        inId.addEventListener("input", () => { rows[idx].id = inId.value; });
-        tdId.appendChild(inId);
-        tr.appendChild(tdId);
-
-        const tdPin = document.createElement("td");
-        tdPin.className = "editable";
-        const inPin = document.createElement("input");
-        inPin.value = r.pin ?? "";
-        inPin.placeholder = "PIN";
-        inPin.addEventListener("input", () => { rows[idx].pin = inPin.value; });
-        tdPin.appendChild(inPin);
-        tr.appendChild(tdPin);
-
-        tbodyInput.appendChild(tr);
-      });
-
-      // コピー用テーブル（セルタップ→そのセルだけコピー）
-      tbodyCopy.innerHTML = "";
-      rows.forEach((r, idx) => {
-        const tr = document.createElement("tr");
-
-        const tdNo = document.createElement("td");
-        tdNo.textContent = String(idx + 1);
-        tr.appendChild(tdNo);
-
-        const tdId = document.createElement("td");
-        tdId.className = "tap";
-        tdId.textContent = r.id ?? "";
-        tdId.addEventListener("click", () => copyCell(tdId, r.id ?? ""));
-        tr.appendChild(tdId);
-
-        const tdPin = document.createElement("td");
-        tdPin.className = "tap";
-        tdPin.textContent = r.pin ?? "";
-        tdPin.addEventListener("click", () => copyCell(tdPin, r.pin ?? ""));
-        tr.appendChild(tdPin);
-
-        tbodyCopy.appendChild(tr);
-      });
+    // ★同じ値なら増やさない（trim同士で比較）
+    if(afterTrim !== beforeTrim){
+      rows[idx].editCount = Number(rows[idx].editCount ?? 0) + 1;
+      ghost.textContent = String(rows[idx].editCount);
+      ghost.style.color = ghostColorByCount(rows[idx].editCount);
     }
 
-    // ---- コピー処理（iOS Safari対応フォールバック付き）
-    async function copyText(text){
-      // 空は何もしない
-      if (!text) return false;
+    renderCopyOnly();
+  });
 
-      try{
-        if (navigator.clipboard && navigator.clipboard.writeText){
-          await navigator.clipboard.writeText(text);
-          return true;
-        }
-      }catch(e){
-        // 後でフォールバック
-      }
+  idCell.appendChild(idInput);
 
-      // フォールバック：一時テキストエリア
-      try{
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.setAttribute("readonly", "");
-        ta.style.position = "fixed";
-        ta.style.top = "-1000px";
-        ta.style.left = "-1000px";
-        document.body.appendChild(ta);
-        ta.select();
-        ta.setSelectionRange(0, ta.value.length);
-        const ok = document.execCommand("copy");
-        document.body.removeChild(ta);
-        return ok;
-      }catch(e){
-        return false;
-      }
+  // IDコピー（入力画面でも）
+  const idCopyCell = document.createElement("div");
+  idCopyCell.className = "cell copyMini";
+  const btnIdCopy = document.createElement("button");
+  btnIdCopy.className = "secondary";
+  btnIdCopy.textContent = "📋";
+  btnIdCopy.title = "IDをコピー";
+  btnIdCopy.addEventListener("click", async ()=>{
+    const ok = await copyText(rows[idx].id ?? "");
+    if(ok){
+      flashCell(idCell);
+      showToast("IDコピー");
+    }else{
+      showToast("コピー失敗");
     }
+  });
+  idCopyCell.appendChild(btnIdCopy);
 
-    let toastTimer = null;
+  // PIN
+  const pinCell = document.createElement("div");
+  pinCell.className = "cell";
+  const pinInput = document.createElement("input");
+  pinInput.className = "pinInput";
+  pinInput.value = r.pin ?? "";
+  pinInput.inputMode = "text";
+  pinInput.autocapitalize = "none";
+  pinInput.autocomplete = "off";
+  pinInput.spellcheck = false;
 
-    async function copyCell(cellEl, text){
-      // 既存の強調を全消し（IDとPINが一緒に光らないよう“そのセルだけ”）
-      document.querySelectorAll(".flash").forEach(x => x.classList.remove("flash"));
-
-      const ok = await copyText(text);
-
-      // 成功したセルだけ強調
-      if (ok){
-        cellEl.classList.add("flash");
-        showToast(`コピーしました`);
-        setTimeout(() => cellEl.classList.remove("flash"), 650);
-      }else{
-        showToast(`コピー失敗（長押し→コピーで代替）`);
-      }
+  let pinBefore = pinInput.value;
+  pinInput.addEventListener("focus", ()=>{ pinBefore = (pinInput.value ?? ""); });
+  pinInput.addEventListener("blur", ()=>{
+    const afterRaw = (pinInput.value ?? "");
+    const prevRaw  = (rows[idx].pin ?? "");
+    if(prevRaw !== afterRaw){
+      pushUndo();
+      rows[idx].pin = afterRaw;
+      renderCopyOnly();
     }
+    // PIN編集では editCount を増やさない（仕様：ID編集だけカウント）
+  });
 
-    function showToast(msg){
-      toast.textContent = msg;
-      toast.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove("show"), 900);
+  pinCell.appendChild(pinInput);
+
+  // PINコピー
+  const pinCopyCell = document.createElement("div");
+  pinCopyCell.className = "cell copyMini";
+  const btnPinCopy = document.createElement("button");
+  btnPinCopy.className = "secondary";
+  btnPinCopy.textContent = "📋";
+  btnPinCopy.title = "PINをコピー";
+  btnPinCopy.addEventListener("click", async ()=>{
+    const ok = await copyText(rows[idx].pin ?? "");
+    if(ok){
+      flashCell(pinCell);
+      showToast("PINコピー");
+    }else{
+      showToast("コピー失敗");
     }
+  });
+  pinCopyCell.appendChild(btnPinCopy);
 
-    // ---- 贴り付け反映（TSV/CSVっぽいの対応）
-    document.getElementById("btnApply").addEventListener("click", () => {
-      const raw = document.getElementById("paste").value || "";
-      const parsed = parsePasted(raw);
-      rows = parsed;
-      render();
-      showToast("反映しました");
-    });
+  tr.appendChild(num);
+  tr.appendChild(idCell);
+  tr.appendChild(idCopyCell);
+  tr.appendChild(pinCell);
+  tr.appendChild(pinCopyCell);
 
-    function parsePasted(raw){
-      const lines = raw
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .split("\n")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
+  return tr;
+}
 
-      const out = [];
-      for (const line of lines){
-        // タブ優先、なければカンマでも区切れるようにする
-        let parts = line.split("\t");
-        if (parts.length < 2) parts = line.split(",");
-        const id  = (parts[0] ?? "").trim();
-        const pin = (parts[1] ?? "").trim();
-        if (id || pin) out.push({ id, pin });
-      }
-      return out;
-    }
+/* ==========
+  行レンダ（コピー画面：編集不可）
+========== */
+function renderRowCopy(r, idx){
+  const tr = document.createElement("div");
+  tr.className = "tr";
 
-    // ---- 保存/読込/全削除
-    document.getElementById("btnSave").addEventListener("click", () => {
-      localStorage.setItem(LS_KEY, JSON.stringify(rows));
-      showToast("保存しました");
-    });
+  const num = document.createElement("div");
+  num.className = "cell numCell";
 
-    document.getElementById("btnLoad").addEventListener("click", () => {
-      const s = localStorage.getItem(LS_KEY);
-      rows = s ? safeJson(s, []) : [];
-      render();
-      showToast("読み込みました");
-    });
+  const front = document.createElement("div");
+  front.className = "numFront";
+  front.textContent = String(idx + 1);
 
-    document.getElementById("btnClear").addEventListener("click", () => {
-      rows = [];
-      render();
-      showToast("全削除しました");
-    });
+  const ghost = document.createElement("div");
+  ghost.className = "ghost";
+  ghost.textContent = String(r.editCount ?? 0);
+  ghost.style.color = ghostColorByCount(Number(r.editCount ?? 0));
 
-    function safeJson(s, fallback){
-      try{ return JSON.parse(s); }catch(e){ return fallback; }
-    }
+  num.appendChild(ghost);
+  num.appendChild(front);
 
-    // ---- データを書き出し（TSVでコピー）
-    document.getElementById("btnExport").addEventListener("click", async () => {
-      const tsv = rows.map(r => `${r.id ?? ""}\t${r.pin ?? ""}`).join("\n");
-      const ok = await copyText(tsv);
-      if (ok) showToast("TSVをコピーしました");
-      else showToast("コピー失敗（手動で選択）");
-    });
+  const idCell = document.createElement("div");
+  idCell.className = "cell";
+  const idText = document.createElement("div");
+  idText.style.fontWeight = "900";
+  idText.style.padding = "8px 10px";
+  idText.style.borderRadius = "12px";
+  idText.style.userSelect = "text";
+  idText.textContent = (r.id ?? "");
+  idCell.appendChild(idText);
 
-    // 初期表示（初回は空。保存があれば自動読込）
-    (function init(){
-      const s = localStorage.getItem(LS_KEY);
-      if (s){
-        rows = safeJson(s, []);
-      }else{
-        rows = []; // 空でOK
-      }
-      render();
-    })();
-  </script>
+  const idCopyCell = document.createElement("div");
+  idCopyCell.className = "cell copyMini";
+  const btnIdCopy = document.createElement("button");
+  btnIdCopy.className = "secondary";
+  btnIdCopy.textContent = "📋";
+  btnIdCopy.addEventListener("click", async ()=>{
+    const ok = await copyText(r.id ?? "");
+    if(ok){ flashCell(idCell); showToast("IDコピー"); }
+    else{ showToast("コピー失敗"); }
+  });
+  idCopyCell.appendChild(btnIdCopy);
+
+  const pinCell = document.createElement("div");
+  pinCell.className = "cell";
+  const pinText = document.createElement("div");
+  pinText.style.fontWeight = "900";
+  pinText.style.padding = "8px 10px";
+  pinText.style.borderRadius = "12px";
+  pinText.style.userSelect = "text";
+  pinText.textContent = (r.pin ?? "");
+  pinCell.appendChild(pinText);
+
+  const pinCopyCell = document.createElement("div");
+  pinCopyCell.className = "cell copyMini";
+  const btnPinCopy = document.createElement("button");
+  btnPinCopy.className = "secondary";
+  btnPinCopy.textContent = "📋";
+  btnPinCopy.addEventListener("click", async ()=>{
+    const ok = await copyText(r.pin ?? "");
+    if(ok){ flashCell(pinCell); showToast("PINコピー"); }
+    else{ showToast("コピー失敗"); }
+  });
+  pinCopyCell.appendChild(btnPinCopy);
+
+  tr.appendChild(num);
+  tr.appendChild(idCell);
+  tr.appendChild(idCopyCell);
+  tr.appendChild(pinCell);
+  tr.appendChild(pinCopyCell);
+
+  return tr;
+}
+
+/* ==========
+  レンダリング
+========== */
+function renderAll(){
+  tbody.innerHTML = "";
+  rows.forEach((r, i)=> tbody.appendChild(renderRowInput(r, i)));
+  renderCopyOnly();
+  copyCount.textContent = `件数：${rows.length}`;
+}
+function renderCopyOnly(){
+  tbodyCopy.innerHTML = "";
+  rows.forEach((r,i)=> tbodyCopy.appendChild(renderRowCopy(r,i)));
+  copyCount.textContent = `件数：${rows.length}`;
+}
+
+/* ==========
+  UIイベント
+========== */
+tabInput.addEventListener("click", ()=>setView("input"));
+tabCopy.addEventListener("click", ()=>setView("copy"));
+
+btnSave.addEventListener("click", save);
+btnLoad.addEventListener("click", load);
+btnClear.addEventListener("click", clearAll);
+
+btnUndo.addEventListener("click", undo);
+btnRedo.addEventListener("click", redo);
+
+btnApply.addEventListener("click", ()=>{
+  const text = pasteBox.value ?? "";
+  const parsed = parseLinesToRows(text);
+
+  pushUndo();
+  rows = parsed;
+
+  renderAll();
+  showToast("反映しました");
+});
+
+btnCopyTSV.addEventListener("click", async ()=>{
+  const tsv = toTSV();
+  const ok = await copyText(tsv);
+  if(ok) showToast("TSVコピー");
+  else showToast("コピー失敗");
+});
+
+/* ==========
+  初期化
+========== */
+(function init(){
+  const s = localStorage.getItem(LS_KEY);
+  const p = localStorage.getItem(LS_PASTE);
+  if(s){
+    try{ rows = JSON.parse(s) || []; }catch(e){ rows = []; }
+  }
+  if(p != null) pasteBox.value = p;
+
+  renderAll();
+  refreshUndoRedo();
+  setView("input");
+})();
+</script>
 </body>
 </html>
