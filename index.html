@@ -25,16 +25,17 @@
       --focus:#c7d2fe;
 
       /* コピー強調（薄い青） */
-      --copiedBg:#dbeafe;   /* ←薄い青 */
+      --copiedBg:#dbeafe;
       --copiedLine:#93c5fd;
 
-      /* #列 背景数字（少し濃く） */
-      --ghostAlpha:0.22;    /* ←濃さ調整（必要なら 0.18〜0.30） */
+      /* #列 背景数字（見えるように） */
+      --ghostAlpha:0.28; /* ← 0.22 → 少し濃く */
+      --ghostSize:46px;  /* ← 大きくして見えやすく */
 
-      /* テーブル列幅（IDを広く） */
-      --colNum:54px;
-      --colId:1.7fr;
-      --colPin:1.1fr;
+      /* テーブル列幅（#最狭 / ID最広 / PIN次） */
+      --colNum:40px;
+      --colId:2.2fr;
+      --colPin:1.4fr;
       --colBtn:56px;
     }
 
@@ -53,6 +54,8 @@
       display:flex;
       flex-direction:column;
     }
+
+    /* ===== Top ===== */
     .topbar{
       position:sticky;
       top:0;
@@ -60,7 +63,7 @@
       background:rgba(245,247,251,.92);
       backdrop-filter:saturate(180%) blur(12px);
       border-bottom:1px solid var(--line);
-      padding:10px 12px 8px;
+      padding:10px 12px 6px; /* ← 少し詰める */
     }
     .toprow{
       display:flex;
@@ -114,7 +117,7 @@
       transform:none;
     }
     .titleline{
-      margin-top:8px;
+      margin-top:6px; /* ← 少し詰める */
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -130,13 +133,14 @@
       font-weight:800;
     }
 
+    /* ===== Content ===== */
     .content{
       width:min(980px,100%);
       margin:0 auto;
-      padding:12px 12px 96px;
+      padding:8px 12px 88px; /* ← 上の余白を削る（無駄スペース対策） */
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px; /* ← カード間を詰める */
     }
 
     .card{
@@ -146,11 +150,11 @@
       padding:14px;
     }
 
-    /* 入力シート（貼り付け） */
+    /* 入力（貼り付け） */
     .pasteWrap{
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px; /* ← 詰める */
     }
     .pasteLabel{
       font-size:13px;
@@ -188,7 +192,7 @@
       font-weight:900;
     }
 
-    /* テーブル共通 */
+    /* テーブル */
     .tableCard{
       padding:0;
       overflow:hidden;
@@ -211,9 +215,7 @@
       color:#334155;
       font-size:14px;
     }
-    .tbody .tr{
-      background:var(--card);
-    }
+    .tbody .tr{ background:var(--card); }
     .tbody .tr:last-child{border-bottom:none;}
 
     /* #列（バッジ + 背景ゴースト数字） */
@@ -223,9 +225,10 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      overflow:visible;
     }
     .numBadge{
-      width:36px;height:36px;
+      width:34px;height:34px;
       display:grid;
       place-items:center;
       border-radius:999px;
@@ -237,17 +240,19 @@
     }
     .ghost{
       position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
+      top:50%;
+      left:2px; /* ← 少し左に寄せて、バッジに隠れないように */
+      transform:translateY(-50%);
       font-weight:1000;
-      font-size:38px;
+      font-size:var(--ghostSize);
       letter-spacing:-.04em;
       z-index:1;
       pointer-events:none;
-      opacity:var(--ghostAlpha); /* ←濃さ */
-      transform:translateY(1px);
+      opacity:var(--ghostAlpha);
       filter:saturate(1.2);
+      line-height:1;
+      width:100%;
+      text-align:left;
     }
 
     /* 値セル（入力/表示） */
@@ -273,16 +278,17 @@
       box-shadow:0 0 0 4px rgba(199,210,254,.35);
     }
 
-    /* コピー系（入力シートのみ：ボタン） */
+    /* 入力シート：コピーボタン（復活） */
     .copyBtn{
-      width:44px;height:44px;
+      width:52px;height:44px;
       margin:0 auto;
       border-radius:14px;
       border:1px solid #dbeafe;
       background:#eef2ff;
       display:grid;
       place-items:center;
-      font-size:20px;
+      font-size:13px;
+      font-weight:1000;
       user-select:none;
       -webkit-tap-highlight-color:transparent;
       transition:transform .05s ease, filter .15s ease;
@@ -310,11 +316,9 @@
       text-overflow:ellipsis;
       white-space:nowrap;
     }
-    .copyMode .copyTap:active{
-      background:#eef2ff;
-    }
+    .copyMode .copyTap:active{ background:#eef2ff; }
 
-    /* どのセルがコピーされたかの強調（薄い青） */
+    /* コピー強調（薄い青） */
     .copied{
       background:var(--copiedBg) !important;
       box-shadow:inset 0 0 0 2px var(--copiedLine);
@@ -379,18 +383,18 @@
 
     @media (max-width:520px){
       :root{
-        --colNum:52px;
+        --colNum:38px;
         --colBtn:52px;
       }
       .field{font-size:20px;}
       .copyMode .copyTap{font-size:20px;}
+      .copyBtn{width:48px;}
     }
   </style>
 </head>
 
 <body>
 <div class="app">
-  <!-- Top -->
   <div class="topbar">
     <div class="toprow">
       <div class="btnrow">
@@ -411,10 +415,8 @@
     </div>
   </div>
 
-  <!-- Content -->
   <div class="content" id="content"></div>
 
-  <!-- Bottom Nav -->
   <div class="nav">
     <div class="navInner">
       <div class="navBtn active" id="navInput">入力</div>
@@ -429,28 +431,18 @@
 (() => {
   "use strict";
 
-  // =========================
-  // 設定
-  // =========================
-  const MAX_ROWS = 200;                // たくさん入れても縦スクロールだけで対応
+  const MAX_ROWS = 200;
   const LS_KEY_DATA = "idpin_data_v3";
   const LS_KEY_HIST = "idpin_hist_v3";
 
-  // =========================
-  // 状態
-  // =========================
   const state = {
-    screen: "input", // "input" | "copy"
-    rows: [],        // {id, pin, editCount, lastCommittedId}
-    history: {
-      undo: [],
-      redo: []
-    },
+    screen: "input",
+    rows: [],
+    history: { undo: [], redo: [] },
     lastCopiedEl: null,
     lastCopiedTimer: null,
   };
 
-  // 初期 rows
   function makeEmptyRows(){
     const a = [];
     for(let i=0;i<MAX_ROWS;i++){
@@ -459,9 +451,6 @@
     return a;
   }
 
-  // =========================
-  // DOM
-  // =========================
   const $ = (sel, root=document) => root.querySelector(sel);
 
   const content = $("#content");
@@ -478,9 +467,6 @@
   const navInput = $("#navInput");
   const navCopy  = $("#navCopy");
 
-  // =========================
-  // ユーティリティ
-  // =========================
   function activeCount(){
     return state.rows.filter(r => (r.id || r.pin)).length;
   }
@@ -498,9 +484,7 @@
         await navigator.clipboard.writeText(text);
         return true;
       }
-    }catch(e){ /* fallthrough */ }
-
-    // fallback
+    }catch(e){}
     try{
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -535,18 +519,7 @@
   }
 
   function ghostColor(editCount){
-    // 数字によって色が変わる（背景用）
-    // ※濃さはCSSの --ghostAlpha で調整
-    const palette = [
-      "#2563eb", // blue
-      "#7c3aed", // purple
-      "#db2777", // pink
-      "#ea580c", // orange
-      "#16a34a", // green
-      "#0891b2", // cyan
-      "#b45309", // amber
-      "#334155"  // slate
-    ];
+    const palette = ["#2563eb","#7c3aed","#db2777","#ea580c","#16a34a","#0891b2","#b45309","#334155"];
     return palette[Math.abs(editCount) % palette.length];
   }
 
@@ -560,13 +533,7 @@
   }
 
   function pushHistory(reason){
-    // 直前状態をundoへ積む
-    state.history.undo.push({
-      t: Date.now(),
-      reason,
-      rows: deepCloneRows(state.rows)
-    });
-    // 新操作のたびにredoはクリア
+    state.history.undo.push({ t: Date.now(), reason, rows: deepCloneRows(state.rows) });
     state.history.redo = [];
     syncUndoRedoButtons();
     saveHistoryToLS();
@@ -575,16 +542,13 @@
   function applySnapshot(snapshot, from){
     state.rows = deepCloneRows(snapshot.rows);
     syncUndoRedoButtons();
-    render(); // 画面再描画
+    render();
     showToast(from === "undo" ? "戻しました" : "進めました");
   }
 
   function saveHistoryToLS(){
     try{
-      const slim = {
-        undo: state.history.undo.slice(-60), // 60手まで
-        redo: state.history.redo.slice(-60)
-      };
+      const slim = { undo: state.history.undo.slice(-60), redo: state.history.redo.slice(-60) };
       localStorage.setItem(LS_KEY_HIST, JSON.stringify(slim));
     }catch(e){}
   }
@@ -606,16 +570,9 @@
     btnRedo.disabled = state.history.redo.length === 0;
   }
 
-  // =========================
-  // 保存/読込/全削除
-  // =========================
   function saveToLS(){
     try{
-      const payload = {
-        v:3,
-        savedAt: Date.now(),
-        rows: deepCloneRows(state.rows)
-      };
+      const payload = { v:3, savedAt: Date.now(), rows: deepCloneRows(state.rows) };
       localStorage.setItem(LS_KEY_DATA, JSON.stringify(payload));
       showToast("保存しました");
     }catch(e){
@@ -653,16 +610,10 @@
     showToast("全削除しました");
   }
 
-  // =========================
-  // 入力（貼り付け → 反映）
-  // =========================
   function parsePasted(text){
-    // 1行:  ID<空白/タブ>PIN
-    // 空行は無視
     const lines = (text || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     const out = [];
     for(const line of lines){
-      // 連続空白/タブで分割
       const parts = line.split(/\s+/);
       const id = parts[0] ?? "";
       const pin = parts[1] ?? "";
@@ -675,81 +626,54 @@
     const parsed = parsePasted(text);
     pushHistory("apply_paste");
 
-    // 全置換（編集回数は初期化）
     state.rows = makeEmptyRows();
     for(let i=0;i<Math.min(MAX_ROWS, parsed.length);i++){
       state.rows[i].id = parsed[i].id;
       state.rows[i].pin = parsed[i].pin;
       state.rows[i].editCount = 0;
-      state.rows[i].lastCommittedId = parsed[i].id; // 同値編集はカウントしないための基準
+      state.rows[i].lastCommittedId = parsed[i].id;
     }
     render();
     showToast("貼り付け反映しました");
   }
 
-  // =========================
-  // TSVコピー（書き出し）
-  // =========================
   function buildTSV(){
     const rows = state.rows.filter(r => (r.id || r.pin));
-    // ヘッダは好みにより無しでもOK。今回は“扱いやすさ優先で無し”
     return rows.map(r => `${r.id}\t${r.pin}`).join("\n");
   }
 
   async function copyTSV(){
     const tsv = buildTSV();
-    if(!tsv){
-      showToast("データなし");
-      return;
-    }
+    if(!tsv){ showToast("データなし"); return; }
     const ok = await copyText(tsv);
     showToast(ok ? "TSVをコピーしました" : "コピー失敗");
   }
 
-  // =========================
-  // 行編集：ID編集回数ギミック
-  // =========================
   function commitIdEdit(rowIndex, newId){
     const r = state.rows[rowIndex];
     const prevCommitted = r.lastCommittedId ?? "";
     const next = newId ?? "";
-
-    // 同値はカウントしない
     if(next !== prevCommitted){
       r.editCount = (r.editCount ?? 0) + 1;
       r.lastCommittedId = next;
     }
   }
 
-  // =========================
-  // “最初のタップで全選択” 対策（iOS）
-  // =========================
   function attachSelectAllBehavior(inputEl){
-    // pointerdown / touchstart で “次のfocusで全選択” を予約
-    inputEl.addEventListener("pointerdown", () => {
-      inputEl.dataset.sel = "1";
-    }, {passive:true});
-
+    inputEl.addEventListener("pointerdown", () => { inputEl.dataset.sel = "1"; }, {passive:true});
     inputEl.addEventListener("focus", () => {
       if(inputEl.dataset.sel === "1"){
-        // iOSはタイミングがシビアなので少し遅らせる
         requestAnimationFrame(() => {
-          try{
-            inputEl.setSelectionRange(0, inputEl.value.length);
-          }catch(e){}
+          try{ inputEl.setSelectionRange(0, inputEl.value.length); }catch(e){}
           inputEl.dataset.sel = "0";
         });
       }
     });
   }
 
-  // =========================
-  // Undo/Redo
-  // =========================
   function undo(){
     if(state.history.undo.length === 0) return;
     const snap = state.history.undo.pop();
-    // 現在をredoへ
     state.history.redo.push({ t: Date.now(), reason:"redo_from_undo", rows: deepCloneRows(state.rows) });
     saveHistoryToLS();
     applySnapshot(snap, "undo");
@@ -758,25 +682,18 @@
   function redo(){
     if(state.history.redo.length === 0) return;
     const snap = state.history.redo.pop();
-    // 現在をundoへ
     state.history.undo.push({ t: Date.now(), reason:"undo_from_redo", rows: deepCloneRows(state.rows) });
     saveHistoryToLS();
     applySnapshot(snap, "redo");
   }
 
-  // =========================
-  // 画面レンダリング
-  // =========================
   function render(){
-    // header
     screenTitle.textContent = (state.screen === "input") ? "入力" : "コピー";
     countLabel.textContent = `件数：${activeCount()}`;
 
-    // nav active
     navInput.classList.toggle("active", state.screen === "input");
     navCopy.classList.toggle("active", state.screen === "copy");
 
-    // content
     content.innerHTML = "";
     if(state.screen === "input"){
       content.appendChild(renderInputScreen());
@@ -789,12 +706,11 @@
     const wrap = document.createElement("div");
     wrap.className = "pasteWrap";
 
-    // 貼り付けカード
     const c1 = document.createElement("div");
     c1.className = "card";
     c1.innerHTML = `
       <div class="pasteLabel">入力（貼り付け → 反映）</div>
-      <textarea id="pasteArea" hint="貼り付け"></textarea>
+      <textarea id="pasteArea" placeholder="例：VMA1069413711  8p7s@3WD"></textarea>
       <div class="actions2">
         <button class="btn primary" id="btnApply">貼り付け反映</button>
         <button class="btn" id="btnCopyTSV">データをコピー（TSV）</button>
@@ -802,11 +718,9 @@
     `;
     wrap.appendChild(c1);
 
-    // テーブル
     const table = document.createElement("div");
     table.className = "card tableCard";
 
-    // thead
     const thead = document.createElement("div");
     thead.className = "thead";
     const trh = document.createElement("div");
@@ -821,7 +735,6 @@
     thead.appendChild(trh);
     table.appendChild(thead);
 
-    // tbody
     const tbody = document.createElement("div");
     tbody.className = "tbody";
 
@@ -832,7 +745,6 @@
       tr.className = "tr";
       tr.dataset.idx = String(i);
 
-      // #セル
       const num = document.createElement("div");
       num.className = "numCell";
       const badge = document.createElement("div");
@@ -847,48 +759,42 @@
       num.appendChild(ghost);
       num.appendChild(badge);
 
-      // ID入力
       const idCell = document.createElement("div");
       idCell.className = "valCell";
       const idInput = document.createElement("input");
       idInput.className = "field";
       idInput.type = "text";
-      idInput.inputMode = "text";
       idInput.autocapitalize = "off";
       idInput.autocomplete = "off";
       idInput.spellcheck = false;
       idInput.value = r.id || "";
-      idInput.placeholder = "";
       idInput.dataset.role = "id";
       attachSelectAllBehavior(idInput);
+      idCell.appendChild(idInput);
 
-      // PIN入力
       const pinCell = document.createElement("div");
       pinCell.className = "valCell";
       const pinInput = document.createElement("input");
       pinInput.className = "field";
       pinInput.type = "text";
-      pinInput.inputMode = "text";
       pinInput.autocapitalize = "off";
       pinInput.autocomplete = "off";
       pinInput.spellcheck = false;
       pinInput.value = r.pin || "";
-      pinInput.placeholder = "";
       pinInput.dataset.role = "pin";
       attachSelectAllBehavior(pinInput);
-
-      idCell.appendChild(idInput);
       pinCell.appendChild(pinInput);
 
-      // コピーボタン（入力シートはボタンOK）
+      /* 入力シート：コピーボタン（復活） */
       const idCopy = document.createElement("div");
       idCopy.className = "copyBtn";
-      idCopy.textContent = "📋";
+      idCopy.textContent = "コピー";
+
       const pinCopy = document.createElement("div");
       pinCopy.className = "copyBtn";
-      pinCopy.textContent = "📋";
+      pinCopy.textContent = "コピー";
 
-      // 「反映してなくてもコピーできる」がNG → 値が空なら無効
+      /* 反映していない（空）の状態ではコピー不可 */
       if(!r.id) idCopy.classList.add("disabled");
       if(!r.pin) pinCopy.classList.add("disabled");
 
@@ -899,21 +805,17 @@
       tr.appendChild(pinCopy);
       tbody.appendChild(tr);
 
-      // イベント：ID/PIN編集（軽量化のため最小限）
-      let idBefore = r.id || "";
-      idInput.addEventListener("focus", () => { idBefore = idInput.value; }, {passive:true});
       idInput.addEventListener("blur", () => {
         const nv = idInput.value.trim();
-        // 変更が確定したら履歴を積む（ただし同値なら積まない）
         const was = state.rows[i].id || "";
         if(nv !== was){
           pushHistory("edit_id");
           state.rows[i].id = nv;
           commitIdEdit(i, nv);
 
-          // 表示更新（この行だけ）
           ghost.textContent = String(state.rows[i].editCount ?? 0);
           ghost.style.color = ghostColor(state.rows[i].editCount ?? 0);
+
           idCopy.classList.toggle("disabled", !nv);
           countLabel.textContent = `件数：${activeCount()}`;
         }
@@ -925,12 +827,12 @@
         if(nv !== was){
           pushHistory("edit_pin");
           state.rows[i].pin = nv;
+
           pinCopy.classList.toggle("disabled", !nv);
           countLabel.textContent = `件数：${activeCount()}`;
         }
       });
 
-      // コピー（入力シート：ボタン押下）
       idCopy.addEventListener("click", async () => {
         const v = state.rows[i].id || "";
         if(!v) return;
@@ -959,7 +861,6 @@
     table.appendChild(tbody);
     wrap.appendChild(table);
 
-    // 入力カード操作
     const pasteArea = c1.querySelector("#pasteArea");
     const btnApply = c1.querySelector("#btnApply");
     const btnCopy = c1.querySelector("#btnCopyTSV");
@@ -971,7 +872,6 @@
   }
 
   function renderCopyScreen(){
-    // コピーシートは「セルタップでコピー」「UIは入力と別」「ボタン無し」
     const wrap = document.createElement("div");
     wrap.className = "copyMode";
 
@@ -993,7 +893,6 @@
     const tbody = document.createElement("div");
     tbody.className = "tbody";
 
-    // 表示は「データがある行だけ」にしてスッキリ
     const rows = state.rows
       .map((r, idx) => ({...r, idx}))
       .filter(x => (x.id || x.pin));
@@ -1012,9 +911,7 @@
     for(const x of rows){
       const tr = document.createElement("div");
       tr.className = "tr";
-      tr.dataset.idx = String(x.idx);
 
-      // #
       const num = document.createElement("div");
       num.className = "numCell";
       const badge = document.createElement("div");
@@ -1029,20 +926,14 @@
       num.appendChild(ghost);
       num.appendChild(badge);
 
-      // タップでコピー（ID / PIN）
       const idTap = document.createElement("div");
       idTap.className = "copyTap";
       idTap.textContent = x.id || "";
-      idTap.title = "タップでコピー";
-      idTap.dataset.role = "id";
 
       const pinTap = document.createElement("div");
       pinTap.className = "copyTap";
       pinTap.textContent = x.pin || "";
-      pinTap.title = "タップでコピー";
-      pinTap.dataset.role = "pin";
 
-      // クリック → そのセルだけコピー（強調もそのセルだけ）
       idTap.addEventListener("click", async () => {
         const v = x.id || "";
         if(!v) return;
@@ -1078,36 +969,24 @@
     return wrap;
   }
 
-  // =========================
-  // 画面切替
-  // =========================
   function go(screen){
     if(state.screen === screen) return;
     state.screen = screen;
     render();
   }
 
-  // =========================
-  // クリック系
-  // =========================
   btnSave.addEventListener("click", saveToLS);
   btnLoad.addEventListener("click", loadFromLS);
   btnClear.addEventListener("click", clearAll);
-
   btnUndo.addEventListener("click", undo);
   btnRedo.addEventListener("click", redo);
-
   navInput.addEventListener("click", () => go("input"));
   navCopy.addEventListener("click", () => go("copy"));
 
-  // =========================
-  // 初期化
-  // =========================
   function init(){
     state.rows = makeEmptyRows();
     loadHistoryFromLS();
 
-    // 初回：保存データがあれば自動読込（任意）
     try{
       const raw = localStorage.getItem(LS_KEY_DATA);
       if(raw){
