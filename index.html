@@ -36,7 +36,7 @@
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
-      overscroll-behavior-y: contain; /* 縦だけ気持ちよく */
+      overscroll-behavior-y: contain;
     }
 
     .wrap{
@@ -45,7 +45,6 @@
       padding: 14px 14px 120px;
     }
 
-    /* 上部コントロール */
     .topbar{
       position: sticky;
       top: 0;
@@ -87,7 +86,6 @@
       font-weight: 900;
     }
 
-    /* カード */
     .card{
       background:var(--card);
       border: 1px solid var(--line);
@@ -126,7 +124,6 @@
       margin: 6px 0 10px;
     }
 
-    /* 入力ブロック */
     .pasteBox{
       width:100%;
       border: 1px solid var(--line);
@@ -156,7 +153,6 @@
       font-size: 16px;
     }
 
-    /* テーブル（共通：横スクロール無し） */
     .grid{
       width:100%;
       border: 1px solid var(--line);
@@ -165,13 +161,13 @@
       background: #fff;
     }
 
-    /* ★変更：#列をもっと細く / IDを最も広く */
+    /* ★変更：#列 44px → 34px */
     .gridHeader, .gridRow{
       display:grid;
-      grid-template-columns: 34px minmax(0, 1.4fr) minmax(0, 1fr); /* #最狭 / ID最広 / PIN次 */
+      grid-template-columns: 34px 1fr 0.78fr; /* #最狭 / ID最広 / PIN次に広い */
       align-items:center;
       column-gap: 10px;
-      padding: 10px 10px;
+      padding: 12px 12px;
     }
 
     .gridHeader{
@@ -189,17 +185,15 @@
     }
     .gridRow:last-child{ border-bottom: 0; }
 
-    /* #列（丸バッジは廃止＝ただの数字） */
     .numCell{
       position: relative;
-      height: 40px;
+      height: 44px;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight: 900;
       color: #1a2236;
     }
-    /* 背景の薄い大きい数字（編集カウント） */
     .numGhost{
       position:absolute;
       inset:0;
@@ -207,20 +201,18 @@
       align-items:center;
       justify-content:center;
       font-weight: 1000;
-      font-size: 26px;
+      font-size: 28px;
       letter-spacing: -1px;
-      opacity: 1; /* 色は rgba 側で制御 */
       pointer-events:none;
       transform: translateY(1px);
     }
     .numFront{
       position:relative;
       z-index:2;
-      font-size: 12px;
+      font-size: 13px;
       opacity: .9;
     }
 
-    /* 入力セル（入力シートのみ） */
     .cellWrap{
       position: relative;
       display:flex;
@@ -233,7 +225,7 @@
       border: 1px solid transparent;
       background: transparent;
       outline:none;
-      padding: 8px 40px 8px 8px; /* 右にコピーアイコン分 */
+      padding: 10px 44px 10px 10px;
       border-radius: 14px;
       font-weight: 900;
       letter-spacing: .2px;
@@ -245,52 +237,44 @@
       box-shadow: 0 0 0 4px rgba(122,140,255,0.18);
     }
 
-    /* 入力シートのコピーアイコン（列を増やさず中に置く） */
     .copyMini{
       position:absolute;
       right: 6px;
       top: 50%;
       transform: translateY(-50%);
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
       border-radius: 12px;
       border: 1px solid #cfd7ff;
       background: #eef2ff;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 16px;
+      font-size: 18px;
       cursor:pointer;
       user-select:none;
     }
 
-    /* コピーシート（タップでコピー） */
     .tapCell{
-      padding: 8px 8px;
+      padding: 10px 10px;
       border-radius: 14px;
       font-weight: 900;
       letter-spacing: .2px;
       user-select: none;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor:pointer;
       min-width: 0;
-
-      /* ★変更：省略(…)せずに全部見せる（必要なら折り返し） */
-      white-space: normal;
-      word-break: break-all;
-      overflow: visible;
     }
-    .tapCell:active{
-      transform: scale(0.995);
-    }
+    .tapCell:active{ transform: scale(0.995); }
 
-    /* コピー反応（薄い青） */
     .flash{
       background: var(--flash) !important;
       outline: 2px solid var(--flashOutline);
       outline-offset: -2px;
     }
 
-    /* 下タブ */
     .tabs{
       position: fixed;
       left: 0; right: 0;
@@ -322,7 +306,6 @@
       border-color: rgba(0,0,0,0);
     }
 
-    /* トースト */
     .toast{
       position: fixed;
       left: 50%;
@@ -341,36 +324,15 @@
     }
     .toast.show{ opacity: 1; }
 
-    /* ★変更：入力・コピー両方、もう少し小さく（全文字が見える優先） */
+    /* 入力シートは 12px（既存仕様のまま） */
     .view-input .gridRow,
-    .view-input .gridHeader{
-      font-size: 14px;
-    }
-    .view-input .cellInput{
-      font-size: 14px;
-    }
-    .view-copy .gridRow,
-    .view-copy .gridHeader{
-      font-size: 14px;
-    }
-    .view-copy .tapCell{
-      font-size: 14px;
-      line-height: 1.15;
-    }
+    .view-input .gridHeader{ font-size: 12px; }
+    .view-input .cellInput{ font-size: 12px; }
 
-    /* さらに狭い端末向け（保険） */
-    @media (max-width: 390px){
-      .view-input .gridRow,
-      .view-input .gridHeader,
-      .view-copy .gridRow,
-      .view-copy .gridHeader{
-        font-size: 13px;
-      }
-      .view-input .cellInput,
-      .view-copy .tapCell{
-        font-size: 13px;
-      }
-    }
+    /* コピーシートはそのまま */
+    .view-copy .gridRow,
+    .view-copy .gridHeader{ font-size: 18px; }
+    .view-copy .tapCell{ font-size: 18px; }
   </style>
 </head>
 
@@ -459,20 +421,13 @@
   <div class="toast" id="toast">コピーしました</div>
 
   <script>
-    /***************
-     * 状態
-     ***************/
     const STORAGE_KEY = "idpin_app_v1";
     const MAX_ROWS = 120;
 
-    // row: { id, pin, editCount, lastCountedId }
     let rows = [];
-
-    // 履歴（戻る/進む）
     let history = [];
     let histIdx = -1;
 
-    // UI refs
     const viewInput = document.getElementById("viewInput");
     const viewCopy  = document.getElementById("viewCopy");
     const tabInput  = document.getElementById("tabInput");
@@ -497,9 +452,6 @@
 
     const toast = document.getElementById("toast");
 
-    /***************
-     * ユーティリティ
-     ***************/
     function showToast(msg="コピーしました"){
       toast.textContent = msg;
       toast.classList.add("show");
@@ -587,22 +539,18 @@
       return `hsla(${hue}, 70%, 45%, ${a})`;
     }
 
-    /***************
-     * 描画
-     ***************/
     function renderAll(){
       renderInputTable();
       renderCopyTable();
-      const c = String(nonEmptyCount());
-      countInput.textContent = c;
-      countTableInput.textContent = c;
-      countCopy.textContent = c;
+      const c = nonEmptyCount();
+      countInput.textContent = String(c);
+      countTableInput.textContent = String(c);
+      countCopy.textContent = String(c);
     }
 
     function renderInputTable(){
       rowsInput.innerHTML = "";
       const count = rows.length;
-
       for(let i=0;i<Math.max(count, 1);i++){
         ensureRow(i);
         const r = rows[i];
@@ -625,7 +573,6 @@
         num.appendChild(ghost);
         num.appendChild(front);
 
-        // ID（13桁・★数値以外もOK：削除しない）
         const idWrap = document.createElement("div");
         idWrap.className = "cellWrap";
         const idInput = document.createElement("input");
@@ -633,7 +580,6 @@
         idInput.value = r.id ?? "";
         idInput.autocomplete = "off";
         idInput.spellcheck = false;
-        idInput.maxLength = 13; // 13桁（文字種は問わない）
 
         const idCopy = document.createElement("button");
         idCopy.type = "button";
@@ -641,7 +587,6 @@
         idCopy.textContent = "📋";
         idCopy.title = "IDをコピー";
 
-        // PIN（8桁）
         const pinWrap = document.createElement("div");
         pinWrap.className = "cellWrap";
         const pinInput = document.createElement("input");
@@ -657,7 +602,6 @@
         pinCopy.textContent = "📋";
         pinCopy.title = "PINをコピー";
 
-        // 編集時に全選択（1回タップで選択しやすく）
         function enableAutoSelectAll(inp){
           inp.addEventListener("pointerdown", ()=>{
             requestAnimationFrame(()=>{
@@ -673,19 +617,13 @@
         enableAutoSelectAll(idInput);
         enableAutoSelectAll(pinInput);
 
-        // ID編集カウント（値が変わった時だけ +1。同じ値ならカウントしない）
         let idStartValue = r.id ?? "";
-        idInput.addEventListener("focus", ()=>{
-          idStartValue = idInput.value ?? "";
-        });
+        idInput.addEventListener("focus", ()=>{ idStartValue = idInput.value ?? ""; });
 
-        // ★数値以外は削除しない（13文字だけに制限）
-        idInput.addEventListener("input", ()=>{
-          r.id = (idInput.value ?? "").slice(0,13);
-        });
+        idInput.addEventListener("input", ()=>{ r.id = idInput.value ?? ""; });
 
         idInput.addEventListener("blur", ()=>{
-          const newVal = (idInput.value ?? "").slice(0,13);
+          const newVal = (idInput.value ?? "");
           r.id = newVal;
 
           if(newVal !== idStartValue){
@@ -697,46 +635,35 @@
             }
             snapshot();
             renderCopyTable();
-            const c = String(nonEmptyCount());
-            countInput.textContent = c;
-            countTableInput.textContent = c;
-            countCopy.textContent = c;
+            const c = nonEmptyCount();
+            countInput.textContent = String(c);
+            countTableInput.textContent = String(c);
+            countCopy.textContent = String(c);
           }
         });
 
-        // PIN（8文字）
-        pinInput.addEventListener("input", ()=>{
-          r.pin = (pinInput.value ?? "").slice(0,8);
-        });
+        pinInput.addEventListener("input", ()=>{ r.pin = (pinInput.value ?? "").slice(0,8); });
         pinInput.addEventListener("blur", ()=>{
           r.pin = (pinInput.value ?? "").slice(0,8);
           snapshot();
           renderCopyTable();
-          const c = String(nonEmptyCount());
-          countInput.textContent = c;
-          countTableInput.textContent = c;
-          countCopy.textContent = c;
+          const c = nonEmptyCount();
+          countInput.textContent = String(c);
+          countTableInput.textContent = String(c);
+          countCopy.textContent = String(c);
         });
 
-        // 入力シートのコピーボタン（入力側だけ）
         idCopy.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
-          if(ok){
-            flashEl(idInput);
-            showToast("IDをコピー");
-          }
+          if(ok){ flashEl(idInput); showToast("IDをコピー"); }
         });
         pinCopy.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.pin ?? "");
-          if(ok){
-            flashEl(pinInput);
-            showToast("PINをコピー");
-          }
+          if(ok){ flashEl(pinInput); showToast("PINをコピー"); }
         });
 
         idWrap.appendChild(idInput);
         idWrap.appendChild(idCopy);
-
         pinWrap.appendChild(pinInput);
         pinWrap.appendChild(pinCopy);
 
@@ -758,10 +685,7 @@
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
         rowEl.innerHTML = `
-          <div class="numCell">
-            <div class="numGhost" style="color:${colorForCount(0)}">0</div>
-            <div class="numFront">-</div>
-          </div>
+          <div class="numCell"><div class="numGhost" style="color:${colorForCount(0)}">0</div><div class="numFront">-</div></div>
           <div class="tapCell" style="color:#a0a7ba;">（データなし）</div>
           <div class="tapCell"></div>
         `;
@@ -798,20 +722,13 @@
         pinCell.className = "tapCell";
         pinCell.textContent = r.pin ?? "";
 
-        // コピーシート：セルタップでコピー（ボタン無し）
         idCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
-          if(ok){
-            flashEl(idCell);
-            showToast("IDをコピー");
-          }
+          if(ok){ flashEl(idCell); showToast("IDをコピー"); }
         });
         pinCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.pin ?? "");
-          if(ok){
-            flashEl(pinCell);
-            showToast("PINをコピー");
-          }
+          if(ok){ flashEl(pinCell); showToast("PINをコピー"); }
         });
 
         rowEl.appendChild(num);
@@ -822,43 +739,28 @@
       }
     }
 
-    /***************
-     * 入力 → 反映
-     ***************/
     function parsePasted(text){
       const lines = (text ?? "").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
       const out = [];
       for(const line of lines){
         const parts = line.split(/\s+/);
-        if(parts.length === 1){
-          out.push({id: parts[0], pin:""});
-        }else{
-          out.push({id: parts[0], pin: parts[1]});
-        }
+        if(parts.length === 1) out.push({id: parts[0], pin:""});
+        else out.push({id: parts[0], pin: parts[1]});
       }
       return out;
     }
 
     btnApply.addEventListener("click", ()=>{
       const pasted = parsePasted(pasteArea.value);
-
-      if(pasted.length === 0){
-        showToast("貼り付けデータなし");
-        return;
-      }
+      if(pasted.length === 0){ showToast("貼り付けデータなし"); return; }
 
       for(let i=0;i<pasted.length;i++){
         ensureRow(i);
-        // ★数値以外も保持。長さだけ制限
-        const id = (pasted[i].id ?? "").slice(0,13);
+        const id = (pasted[i].id ?? "");
         const pin = (pasted[i].pin ?? "").slice(0,8);
-
         rows[i].id = id;
         rows[i].pin = pin;
-
-        if((rows[i].lastCountedId ?? "") === ""){
-          rows[i].lastCountedId = id;
-        }
+        if((rows[i].lastCountedId ?? "") === "") rows[i].lastCountedId = id;
       }
       clampRows();
       snapshot();
@@ -868,17 +770,11 @@
 
     btnCopyTSV.addEventListener("click", async ()=>{
       const tsv = toTSV();
-      if(!tsv){
-        showToast("コピーするデータなし");
-        return;
-      }
+      if(!tsv){ showToast("コピーするデータなし"); return; }
       const ok = await writeClipboard(tsv);
       if(ok) showToast("TSVコピー");
     });
 
-    /***************
-     * 保存/読込/全削除
-     ***************/
     btnSave.addEventListener("click", ()=>{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       showToast("保存しました");
@@ -886,10 +782,7 @@
 
     btnLoad.addEventListener("click", ()=>{
       const s = localStorage.getItem(STORAGE_KEY);
-      if(!s){
-        showToast("保存データなし");
-        return;
-      }
+      if(!s){ showToast("保存データなし"); return; }
       try{
         rows = JSON.parse(s);
         if(!Array.isArray(rows)) rows = [];
@@ -902,9 +795,7 @@
     });
 
     btnClear.addEventListener("click", ()=>{
-      if(!confirm("本当に全削除しますか？")){
-        return;
-      }
+      if(!confirm("本当に全削除しますか？")) return;
       rows = [];
       pasteArea.value = "";
       history = [];
@@ -914,15 +805,9 @@
       showToast("全削除しました");
     });
 
-    /***************
-     * 戻る/進む
-     ***************/
     btnBack.addEventListener("click", ()=> restoreFromHistory(histIdx - 1));
     btnFwd.addEventListener("click",  ()=> restoreFromHistory(histIdx + 1));
 
-    /***************
-     * タブ切替
-     ***************/
     function setTab(which){
       const isInput = (which === "input");
       viewInput.style.display = isInput ? "" : "none";
@@ -933,9 +818,6 @@
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
-    /***************
-     * 初期化
-     ***************/
     function init(){
       const s = localStorage.getItem(STORAGE_KEY);
       if(s){
