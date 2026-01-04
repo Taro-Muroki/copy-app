@@ -1075,8 +1075,15 @@
       clampRows();
       snapshot();
       renderAll();
-      showToast("追加しました");
+      
+      // ★追加修正：貼り付け時に保存処理を実行
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      showToast("追加・保存しました");
     });
+
+    // ★追加修正：ペーストエリアをクリック（フォーカス）したら全選択
+    pasteArea.addEventListener("focus", ()=> pasteArea.select());
+    pasteArea.addEventListener("click", ()=> pasteArea.select());
 
     btnCopyTSV.addEventListener("click", async ()=>{
       const tsv = toTSV();
