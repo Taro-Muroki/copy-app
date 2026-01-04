@@ -46,9 +46,8 @@
       --copiedBg: #ffebd6;
       --copiedOutline: #ffa84a;
 
-      /* 炭酸の色（黄金色に輝く光）- 今回は未使用だが残しておく */
-      --fizzColor: rgba(255, 220, 150, 0.85);
-      --fizzHighlight: rgba(255, 255, 240, 0.95);
+      /* 穏やかな泡とボトルの色 */
+      --fizzColorSoft: rgba(255, 230, 180, 0.4);
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -63,17 +62,76 @@
       position: relative;
       overflow-x: hidden;
 
-      /* --- 【変更点】新しい静止画背景を適用 --- */
-      /* 生成された暗いコーラと氷の画像を設定 */
-      background-image: url('image_14.png'); 
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: cover; /* 画面全体を覆う */
-      background-attachment: fixed; /* スクロールしても背景を固定 */
+      /* --- 【変更点】静止画を廃止し、深いグラデーションに戻す --- */
+      background-image: 
+        radial-gradient(circle at 50% 40%, rgba(228, 0, 43, 0.2) 0%, transparent 60%),
+        linear-gradient(to bottom, #2a0505 0%, #0a0000 100%);
     }
 
-    /* --- 【変更点】以前のCSSアニメーション背景を削除 --- */
-    /* body::before, body::after の記述を削除しました */
+    /* --- 【変更点】UIを邪魔しない穏やかなアニメーション背景を追加 --- */
+    
+    /* レイヤー1: 大小無数の泡がゆっくり上昇 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.6; /* 控えめな透明度 */
+      background-image: 
+        radial-gradient(circle, var(--fizzColorSoft) 2px, transparent 4px), /* 極小泡 */
+        radial-gradient(circle, var(--fizzColorSoft) 4px, transparent 8px), /* 小泡 */
+        radial-gradient(circle, var(--fizzColorSoft) 7px, transparent 14px), /* 中泡 */
+        radial-gradient(circle, rgba(255,255,255,0.08) 12px, transparent 24px); /* 大泡（薄い） */
+      background-size: 
+        70px 70px,   /* 極小のパターン間隔 */
+        130px 130px, /* 小 */
+        210px 210px, /* 中 */
+        350px 350px; /* 大 */
+      background-position: 
+        0 0, 
+        40px 70px, 
+        90px 30px, 
+        180px 200px;
+      /* 非常にゆっくりと上昇させる */
+      animation: floatingBubblesSoft 30s linear infinite;
+    }
+
+    /* レイヤー2: 大小のボトルシルエットがゆっくり浮遊 */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.25; /* 非常に薄くして邪魔にならないように */
+      /* SVGでボトルの形を定義 (大小2種類をランダム配置) */
+      background-image: 
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 220"><path d="M30,10 C30,5 35,0 50,0 C65,0 70,5 70,10 L70,50 C85,60 95,85 95,120 L95,200 C95,215 85,220 50,220 C15,220 5,215 5,200 L5,120 C5,85 15,60 30,50 Z" fill="white"/></svg>'), /* 大ボトル */
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110"><path d="M15,5 C15,2 17,0 25,0 C33,0 35,2 35,5 L35,25 C42,30 45,40 45,60 L45,100 C45,108 40,110 25,110 C10,110 5,108 5,100 L5,60 C5,40 8,30 15,25 Z" fill="white"/></svg>'); /* 小ボトル */
+      background-size: 
+        140px auto,  /* 大サイズ */
+        70px auto;   /* 小サイズ */
+      background-position: 
+        15% 70%,     /* 大の位置 */
+        80% 20%;     /* 小の位置 */
+      background-repeat: no-repeat;
+      /* ゆっくりと上下に浮遊＋わずかな回転 */
+      animation: floatingBottlesSoft 40s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatingBubblesSoft {
+      from { background-position-y: 0, 70px, 30px, 200px; }
+      to   { background-position-y: -700px, -650px, -600px, -500px; }
+    }
+
+    @keyframes floatingBottlesSoft {
+      0% {
+        transform: translateY(50px) rotate(-3deg);
+      }
+      100% {
+        transform: translateY(-50px) rotate(3deg);
+      }
+    }
+    /* --- 【変更点ここまで】 --- */
 
 
     .wrap{
