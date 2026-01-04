@@ -24,11 +24,11 @@
       --flashOutline:#5aa7ff;
 
       /* #列 背景数字の濃さ */
-      --ghostBaseAlpha:0.30; /* ←少し濃いめ */
+      --ghostBaseAlpha:0.30;
 
-      /* ===== 文字サイズ（ユーザーがUIで変更） ===== */
-      --uiInputFont: 11.5px;   /* 入力シートの見た目サイズ */
-      --uiCopyFont:  15px;     /* コピーシートの見た目サイズ */
+      /* 文字サイズ（ユーザーがUIで変更） */
+      --uiInputFont: 11.5px;
+      --uiCopyFont:  15px;
       --uiInputScale: 0.71875; /* = uiInputFont / 16 （JSで自動更新） */
 
       /* #列 幅 */
@@ -55,7 +55,6 @@
       padding: 14px 14px 120px;
     }
 
-    /* 上部コントロール */
     .topbar{
       position: sticky;
       top: 0;
@@ -97,7 +96,6 @@
       font-weight: 900;
     }
 
-    /* フォント設定パネル */
     .fontPanel{
       margin-top: 8px;
       padding: 12px 12px 10px;
@@ -119,9 +117,7 @@
       color:#2b3245;
       font-size: 13px;
     }
-    .fontRow input[type="range"]{
-      flex:1;
-    }
+    .fontRow input[type="range"]{ flex:1; }
     .fontVal{
       min-width: 54px;
       text-align:right;
@@ -130,7 +126,6 @@
       font-size: 13px;
     }
 
-    /* カード */
     .card{
       background:var(--card);
       border: 1px solid var(--line);
@@ -169,7 +164,6 @@
       margin: 6px 0 10px;
     }
 
-    /* 入力ブロック */
     .pasteBox{
       width:100%;
       border: 1px solid var(--line);
@@ -199,7 +193,6 @@
       font-size: 16px;
     }
 
-    /* テーブル */
     .grid{
       width:100%;
       border: 1px solid var(--line);
@@ -210,7 +203,7 @@
 
     .gridHeader, .gridRow{
       display:grid;
-      grid-template-columns: var(--colNum) 1fr 0.78fr; /* #最狭 / ID最広 / PIN次 */
+      grid-template-columns: var(--colNum) 1fr 0.78fr;
       align-items:center;
       column-gap: 10px;
       padding: 12px 12px;
@@ -231,7 +224,6 @@
     }
     .gridRow:last-child{ border-bottom: 0; }
 
-    /* #列 */
     .numCell{
       position: relative;
       height: 44px;
@@ -261,7 +253,6 @@
       opacity: .9;
     }
 
-    /* 入力セル */
     .cellWrap{
       position: relative;
       display:flex;
@@ -270,7 +261,6 @@
       min-width: 0;
     }
 
-    /* iOSズーム対策：inputのfont-sizeは16px固定（ズームさせない） */
     .cellInput{
       width:100%;
       border: 1px solid transparent;
@@ -281,7 +271,7 @@
       font-weight: 900;
       letter-spacing: .2px;
       min-width: 0;
-      font-size: 16px; /* ←ここ固定 */
+      font-size: 16px; /* iOSズーム対策：固定 */
     }
     .cellInput:focus{
       background: #f7f9ff;
@@ -289,26 +279,21 @@
       box-shadow: 0 0 0 4px rgba(122,140,255,0.18);
     }
 
-    /* 入力シートは見た目サイズをtransformで縮小（inputは16pxのまま） */
     .view-input .cellWrap{
       transform: scale(var(--uiInputScale));
       transform-origin: left center;
       width: calc(100% / var(--uiInputScale));
     }
-
-    /* 入力シート全体の文字（見出し行や#など） */
     .view-input .gridRow,
     .view-input .gridHeader{
       font-size: var(--uiInputFont);
     }
 
-    /* コピーシートの文字 */
     .view-copy .gridRow,
     .view-copy .gridHeader{
       font-size: var(--uiCopyFont);
     }
 
-    /* 入力シートのコピーボタン */
     .copyMini{
       position:absolute;
       right: 6px;
@@ -327,7 +312,6 @@
       user-select:none;
     }
 
-    /* コピーシート（タップでコピー） */
     .tapCell{
       padding: 10px 10px;
       border-radius: 14px;
@@ -343,21 +327,18 @@
     }
     .tapCell:active{ transform: scale(0.995); }
 
-    /* 一時フラッシュ */
     .flash{
       background: var(--flash) !important;
       outline: 2px solid var(--flashOutline);
       outline-offset: -2px;
     }
 
-    /* コピー済み（保持） */
     .copiedMark{
       background: var(--copiedBg) !important;
       outline: 2px solid var(--copiedOutline);
       outline-offset: -2px;
     }
 
-    /* 下タブ */
     .tabs{
       position: fixed;
       left: 0; right: 0;
@@ -389,7 +370,6 @@
       border-color: rgba(0,0,0,0);
     }
 
-    /* トースト */
     .toast{
       position: fixed;
       left: 50%;
@@ -427,7 +407,6 @@
         <button class="btn icon light" id="btnFwd" title="進む">→</button>
       </div>
 
-      <!-- 文字サイズパネル -->
       <div class="fontPanel" id="fontPanel">
         <div class="fontRow">
           <label for="rngInputFont">入力</label>
@@ -487,7 +466,7 @@
 
       <div class="help" style="margin-bottom:12px;">
         セルをタップすると、そのセルの文字だけコピーします。<br/>
-        コピーしたセルは背景色が残ります（どれをコピーしたか追跡用）。
+        1回目コピーで色がつき、2回目コピーで色が戻ります。
       </div>
 
       <div class="grid" id="gridCopy">
@@ -512,9 +491,6 @@
   <div class="toast" id="toast">コピーしました</div>
 
   <script>
-    /***************
-     * 状態
-     ***************/
     const STORAGE_KEY = "idpin_app_v1";
     const SETTINGS_KEY = "idpin_app_settings_v1";
     const MAX_ROWS = 120;
@@ -522,11 +498,9 @@
     // row: { id, pin, editCount, lastCountedId, copiedId, copiedPin }
     let rows = [];
 
-    // 履歴（戻る/進む）
     let history = [];
     let histIdx = -1;
 
-    // UI refs
     const viewInput = document.getElementById("viewInput");
     const viewCopy  = document.getElementById("viewCopy");
     const tabInput  = document.getElementById("tabInput");
@@ -551,7 +525,6 @@
 
     const toast = document.getElementById("toast");
 
-    // font panel
     const btnFont = document.getElementById("btnFont");
     const fontPanel = document.getElementById("fontPanel");
     const rngInputFont = document.getElementById("rngInputFont");
@@ -559,9 +532,6 @@
     const valInputFont = document.getElementById("valInputFont");
     const valCopyFont  = document.getElementById("valCopyFont");
 
-    /***************
-     * ユーティリティ
-     ***************/
     function showToast(msg="コピーしました"){
       toast.textContent = msg;
       toast.classList.add("show");
@@ -613,7 +583,6 @@
       return rows.filter(r => (r.id && r.id.trim()) || (r.pin && r.pin.trim())).length;
     }
 
-    /* TSV： # / ID / PIN / 背景回数(editCount) */
     function toTSV(){
       const filtered = rows
         .filter(r => (r.id && r.id.trim()) || (r.pin && r.pin.trim()));
@@ -662,7 +631,6 @@
     }
 
     function findInsertStart(){
-      // 先頭から「完全に空行（idもpinも空）」を探す。なければ末尾。
       for(let i=0;i<rows.length;i++){
         const r = rows[i];
         const empty = (!r.id || !r.id.trim()) && (!r.pin || !r.pin.trim());
@@ -671,17 +639,9 @@
       return rows.length;
     }
 
-    function normalizeId(s){
-      // 13文字まで。英数字/記号も許容（元データを壊さない）
-      return (s ?? "").trim().slice(0,13);
-    }
-    function normalizePin(s){
-      return (s ?? "").trim().slice(0,8);
-    }
+    function normalizeId(s){ return (s ?? "").trim().slice(0,13); }
+    function normalizePin(s){ return (s ?? "").trim().slice(0,8); }
 
-    /***************
-     * 文字サイズ設定
-     ***************/
     function applyFontSettings(inputPx, copyPx){
       const root = document.documentElement;
       const inV = Number(inputPx);
@@ -731,9 +691,6 @@
       saveSettings(rngInputFont.value, rngCopyFont.value);
     });
 
-    /***************
-     * 描画
-     ***************/
     function renderAll(){
       renderInputTable();
       renderCopyTable();
@@ -753,7 +710,6 @@
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
 
-        // #列
         const num = document.createElement("div");
         num.className = "numCell";
 
@@ -769,7 +725,6 @@
         num.appendChild(ghost);
         num.appendChild(front);
 
-        // ID
         const idWrap = document.createElement("div");
         idWrap.className = "cellWrap";
         const idInput = document.createElement("input");
@@ -785,7 +740,6 @@
         idCopy.textContent = "📋";
         idCopy.title = "IDをコピー";
 
-        // PIN
         const pinWrap = document.createElement("div");
         pinWrap.className = "cellWrap";
         const pinInput = document.createElement("input");
@@ -801,7 +755,6 @@
         pinCopy.textContent = "📋";
         pinCopy.title = "PINをコピー";
 
-        // 全選択しやすく
         function enableAutoSelectAll(inp){
           inp.addEventListener("pointerdown", ()=>{
             requestAnimationFrame(()=>{
@@ -816,13 +769,11 @@
         enableAutoSelectAll(idInput);
         enableAutoSelectAll(pinInput);
 
-        // ID編集カウント
         let idStartValue = r.id ?? "";
         idInput.addEventListener("focus", ()=>{ idStartValue = idInput.value ?? ""; });
 
         idInput.addEventListener("input", ()=>{
           r.id = normalizeId(idInput.value);
-          // 値が変わったらコピー済みフラグは戻す（ID側だけ）
           r.copiedId = false;
         });
 
@@ -858,7 +809,6 @@
           countCopy.textContent = String(nonEmptyCount());
         });
 
-        // 入力シートのコピーボタン
         idCopy.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
@@ -936,23 +886,24 @@
         pinCell.textContent = r.pin ?? "";
         if(r.copiedPin) pinCell.classList.add("copiedMark");
 
-        // コピーシート：タップでコピー + 背景色を保持
+        /* ★変更点：コピーするたびに色をトグル（1回目ON / 2回目OFF） */
         idCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
             flashEl(idCell);
-            r.copiedId = true;
-            idCell.classList.add("copiedMark");
+            r.copiedId = !r.copiedId;                // ←トグル
+            idCell.classList.toggle("copiedMark", r.copiedId);
             snapshot();
             showToast("IDをコピー");
           }
         });
+
         pinCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.pin ?? "");
           if(ok){
             flashEl(pinCell);
-            r.copiedPin = true;
-            pinCell.classList.add("copiedMark");
+            r.copiedPin = !r.copiedPin;             // ←トグル
+            pinCell.classList.toggle("copiedMark", r.copiedPin);
             snapshot();
             showToast("PINをコピー");
           }
@@ -966,9 +917,6 @@
       }
     }
 
-    /***************
-     * 入力 → 反映
-     ***************/
     function stripPrefix(line, label){
       const re = new RegExp("^\\s*" + label + "\\s*[:：]\\s*", "i");
       return line.replace(re, "").trim();
@@ -991,17 +939,15 @@
       for(let i=0;i<lines.length;i++){
         const line = lines[i];
 
-        // 例外：2行表記（アプリID:... / PIN:...）は1件にまとめる
         if(isAppIdLine(line) && (i+1) < lines.length && isPinLine(lines[i+1])){
           const idLabel = line.match(/^\s*AppID/i) ? "AppID" : "アプリID";
           const id = normalizeId(stripPrefix(line, idLabel));
           const pin = normalizePin(stripPrefix(lines[i+1], "PIN"));
           out.push({id, pin});
-          i++; // 次のPIN行を消費
+          i++;
           continue;
         }
 
-        // それ以外：従来ルール（1行＝ID PIN）
         const parts = line.split(/\s+/);
         if(parts.length === 1){
           out.push({id: normalizeId(parts[0]), pin:""});
@@ -1021,7 +967,6 @@
         return;
       }
 
-      // ★変更：上書きではなく「空いている次の行」から追加
       const start = findInsertStart();
 
       for(let i=0;i<pasted.length;i++){
@@ -1031,7 +976,6 @@
         rows[target].id  = normalizeId(pasted[i].id ?? "");
         rows[target].pin = normalizePin(pasted[i].pin ?? "");
 
-        // 追加反映した行はコピー履歴をリセット
         rows[target].copiedId = false;
         rows[target].copiedPin = false;
 
@@ -1056,9 +1000,6 @@
       if(ok) showToast("TSVコピー");
     });
 
-    /***************
-     * 保存/読込/全削除
-     ***************/
     btnSave.addEventListener("click", ()=>{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       showToast("保存しました");
@@ -1082,9 +1023,7 @@
     });
 
     btnClear.addEventListener("click", ()=>{
-      if(!confirm("本当に全削除しますか？")){
-        return;
-      }
+      if(!confirm("本当に全削除しますか？")) return;
       rows = [];
       pasteArea.value = "";
       history = [];
@@ -1094,15 +1033,9 @@
       showToast("全削除しました");
     });
 
-    /***************
-     * 戻る/進む
-     ***************/
     btnBack.addEventListener("click", ()=> restoreFromHistory(histIdx - 1));
     btnFwd.addEventListener("click",  ()=> restoreFromHistory(histIdx + 1));
 
-    /***************
-     * タブ切替
-     ***************/
     function setTab(which){
       const isInput = (which === "input");
       viewInput.style.display = isInput ? "" : "none";
@@ -1113,11 +1046,7 @@
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
-    /***************
-     * 初期化
-     ***************/
     function init(){
-      // 保存データ
       const s = localStorage.getItem(STORAGE_KEY);
       if(s){
         try{
@@ -1126,7 +1055,6 @@
         }catch(_){}
       }
 
-      // 文字サイズ設定
       const st = loadSettings();
       rngInputFont.value = String(st.inputFont);
       rngCopyFont.value  = String(st.copyFont);
