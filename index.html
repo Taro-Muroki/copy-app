@@ -45,6 +45,9 @@
       /* コピー済みセル（保持） */
       --copiedBg: #ffebd6;
       --copiedOutline: #ffa84a;
+
+      /* 炭酸の色（少し金色がかった白） */
+      --fizzColor: rgba(255, 255, 240, 0.7);
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -56,37 +59,61 @@
       background-color: var(--colaDark);
       /* コーラの液体と炭酸をイメージしたグラデーション背景 */
       background-image: 
-        radial-gradient(circle at 15% 50%, var(--colaRed) 0%, transparent 25%),
-        radial-gradient(circle at 85% 30%, #a81d1d 0%, transparent 25%);
+        radial-gradient(circle at 50% 30%, rgba(228, 0, 43, 0.4) 0%, transparent 50%),
+        linear-gradient(to bottom, #4a0a0a 0%, #1a0505 100%);
       color:var(--text);
       overscroll-behavior-y: contain;
       position: relative;
       overflow-x: hidden;
     }
 
-    /* --- 背景の賑やかし（炭酸・瓶・缶） --- */
+    /* --- 【変更点】猛烈な炭酸アニメーション背景 --- */
+    /* 前面の高速な泡 */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       z-index: -1;
-      opacity: 0.4;
       background-image: 
-        /* 炭酸の泡 */
-        radial-gradient(rgba(255,255,255,0.2) 2px, transparent 3px),
-        radial-gradient(rgba(255,255,255,0.15) 1px, transparent 2px),
-        /* 瓶と缶のシルエット（SVG） */
-        url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30,70 L30,90 A5,5 0 0,0 35,95 L45,95 A5,5 0 0,0 50,90 L50,70 L48,60 L48,40 L32,40 L32,60 Z" fill="none" stroke="white" stroke-width="2" opacity="0.3"/><rect x="60" y="50" width="20" height="30" rx="2" fill="none" stroke="white" stroke-width="2" opacity="0.3"/></svg>');
-      background-size: 50px 50px, 30px 30px, 120px 120px;
-      background-position: 0 0, 15px 15px, 0 0;
-      animation: fizzUp 20s linear infinite;
-      pointer-events: none;
+        radial-gradient(circle, var(--fizzColor) 20%, transparent 25%),
+        radial-gradient(circle, var(--fizzColor) 20%, transparent 25%),
+        radial-gradient(circle, var(--fizzColor) 20%, transparent 25%),
+        radial-gradient(circle, rgba(255,255,255,0.4) 10%, transparent 20%);
+      background-size: 10px 10px, 20px 20px, 15px 15px, 5px 5px;
+      background-position: 0 0, 30px 60px, 80px 20px, 120px 90px;
+      opacity: 0.6;
+      /* 高速で上昇させる */
+      animation: fizzFast 1.5s linear infinite;
     }
 
-    @keyframes fizzUp {
-      0% { background-position: 0 1000px, 15px 1015px, 0 500px; }
-      100% { background-position: 0 0, 15px 15px, 0 0; }
+    /* 後面の少しゆっくりで大きな泡（奥行き用） */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background-image: 
+        radial-gradient(circle, var(--fizzColor) 15%, transparent 30%),
+        radial-gradient(circle, rgba(255,200,200,0.3) 10%, transparent 40%);
+      background-size: 50px 50px, 90px 90px;
+      background-position: 20px 20px, 150px 150px;
+      opacity: 0.3;
+      filter: blur(2px); /* 遠近感を出すぼかし */
+      /* 中速で上昇させる */
+      animation: fizzSlow 4s linear infinite;
     }
+
+    @keyframes fizzFast {
+      0% { transform: translateY(100vh) scale(0.8); }
+      100% { transform: translateY(-20vh) scale(1.1); }
+    }
+
+    @keyframes fizzSlow {
+      0% { transform: translateY(100vh); }
+      100% { transform: translateY(-50vh); }
+    }
+    /* --- 【変更点ここまで】 --- */
+
 
     .wrap{
       max-width: 980px;
