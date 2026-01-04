@@ -46,7 +46,7 @@
       --copiedBg: #ffebd6;
       --copiedOutline: #ffa84a;
 
-      /* 炭酸の色（黄金色に輝く光） */
+      /* 炭酸の色（黄金色に輝く光）- 今回は未使用だが残しておく */
       --fizzColor: rgba(255, 220, 150, 0.85);
       --fizzHighlight: rgba(255, 255, 240, 0.95);
     }
@@ -58,70 +58,22 @@
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background-color: var(--colaDark);
-      /* コーラの液体と炭酸をイメージしたグラデーション背景 - より深くマクロ撮影風に */
-      background-image: 
-        radial-gradient(circle at 30% 40%, rgba(228, 0, 43, 0.3) 0%, transparent 60%),
-        radial-gradient(circle at 70% 70%, rgba(255, 100, 0, 0.2) 0%, transparent 50%),
-        linear-gradient(to bottom, #3a0505 0%, #1a0000 100%);
       color:var(--text);
       overscroll-behavior-y: contain;
       position: relative;
       overflow-x: hidden;
+
+      /* --- 【変更点】新しい静止画背景を適用 --- */
+      /* 生成された暗いコーラと氷の画像を設定 */
+      background-image: url('image_14.png'); 
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover; /* 画面全体を覆う */
+      background-attachment: fixed; /* スクロールしても背景を固定 */
     }
 
-    /* --- 【変更点】インテンス・マクロ・フィズ アニメーション --- */
-    /* 前面の超高速で上昇する細かい黄金の泡 */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      /* 複数の泡の層を重ねて密度感を出す */
-      background-image: 
-        radial-gradient(circle at center, var(--fizzColor) 20%, transparent 30%),
-        radial-gradient(circle at center, var(--fizzColor) 15%, transparent 25%),
-        radial-gradient(circle at center, var(--fizzHighlight) 40%, transparent 50%), /* ハイライト */
-        radial-gradient(circle at center, var(--fizzColor) 10%, transparent 20%);
-      background-size: 8px 8px, 14px 24px, 4px 6px, 10px 14px;
-      background-position: 0 0, 50px 120px, 100px 40px, 150px 200px;
-      opacity: 0.9;
-      /* 超高速上昇 + 少し揺れ */
-      animation: fizzIntenseMacro 0.6s linear infinite;
-      mix-blend-mode: screen; /* 光らせる */
-    }
-
-    /* 後面の少し大きめで、うねるような泡（奥行きと迫力） */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background-image: 
-        radial-gradient(circle at center, var(--fizzColor) 30%, rgba(150, 100, 0, 0.3) 50%, transparent 60%),
-        radial-gradient(circle at center, rgba(255,200,150,0.4) 20%, transparent 50%);
-      background-size: 40px 60px, 100px 140px;
-      background-position: 20px 50px, 180px 250px;
-      opacity: 0.6;
-      filter: blur(2px) contrast(1.3); /* 遠近感と強調 */
-      /* 中速上昇 + うねり */
-      animation: fizzMacroDeep 2s ease-in-out infinite alternate, fizzUpSlow 4s linear infinite;
-    }
-
-    @keyframes fizzIntenseMacro {
-      0% { transform: translateY(100vh) scaleX(0.9); opacity:0.6; }
-      50% { opacity: 1; }
-      100% { transform: translateY(-30vh) scaleX(1.1); opacity:0.6; }
-    }
-
-    @keyframes fizzMacroDeep {
-      0% { transform: translateX(-15px); }
-      100% { transform: translateX(15px); }
-    }
-    @keyframes fizzUpSlow {
-      0% { background-position-y: 100vh, 120vh; }
-      100% { background-position-y: -100vh, -80vh; }
-    }
-    /* --- 【変更点ここまで】 --- */
+    /* --- 【変更点】以前のCSSアニメーション背景を削除 --- */
+    /* body::before, body::after の記述を削除しました */
 
 
     .wrap{
