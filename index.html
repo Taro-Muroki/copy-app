@@ -6,47 +6,86 @@
   <title>ID / PIN（入力＆コピー）</title>
   <style>
     :root{
-      --bg:#f3f5fb;
-      --card:#ffffff;
-      --line:#e6e9f2;
-      --text:#101523;
-      --muted:#6b7385;
+      /* --- COLA THEME COLORS --- */
+      --colaRed: #e4002b;
+      --colaDark: #1a0a0a;
+      --colaBrown: #3e1414;
+      --bubble: rgba(255, 255, 255, 0.15);
+      --iceWhite: rgba(255, 255, 255, 0.93);
 
-      --btnDark:#0f1624;
-      --btnDarkText:#ffffff;
-      --btnLight:#e9edff;
+      --bg: #1a0a0a; /* 基本背景は濃い茶黒 */
+      --card: var(--iceWhite);
+      --line: #e6caca;
+      --text: #2b0c0c;
+      --muted: #855b5b;
 
-      --dangerBg:#ffe7ea;
-      --dangerText:#b1001a;
+      /* ボタン周り */
+      --btnDark: #e4002b; /* コーラレッド */
+      --btnDarkText: #ffffff;
+      --btnLight: #fff0f0;
+      
+      --dangerBg: #fff;
+      --dangerText: #e4002b;
 
-      /* コピー時の強調（一時フラッシュ） */
-      --flash:#d8ecff;
-      --flashOutline:#5aa7ff;
+      /* コピー時の強調（シュワッとはじける青白さ） */
+      --flash: #d8f4ff;
+      --flashOutline: #5aceff;
 
       /* #列 背景数字の濃さ */
-      --ghostBaseAlpha:0.30;
+      --ghostBaseAlpha: 0.15;
 
       /* 文字サイズ（ユーザーがUIで変更） */
       --uiInputFont: 11.5px;
       --uiCopyFont:  15px;
-      --uiInputScale: 0.71875; /* = uiInputFont / 16 （JSで自動更新） */
+      --uiInputScale: 0.71875; 
 
       /* #列 幅 */
       --colNum: 34px;
 
       /* コピー済みセル（保持） */
-      --copiedBg: #fff0c9;
-      --copiedOutline: #f2c04a;
+      --copiedBg: #ffebd6;
+      --copiedOutline: #ffa84a;
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{ height:100%; }
+    
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:var(--bg);
+      background-color: var(--colaDark);
+      /* コーラの液体と炭酸をイメージしたグラデーション背景 */
+      background-image: 
+        radial-gradient(circle at 15% 50%, var(--colaRed) 0%, transparent 25%),
+        radial-gradient(circle at 85% 30%, #a81d1d 0%, transparent 25%);
       color:var(--text);
       overscroll-behavior-y: contain;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* --- 背景の賑やかし（炭酸・瓶・缶） --- */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.4;
+      background-image: 
+        /* 炭酸の泡 */
+        radial-gradient(rgba(255,255,255,0.2) 2px, transparent 3px),
+        radial-gradient(rgba(255,255,255,0.15) 1px, transparent 2px),
+        /* 瓶と缶のシルエット（SVG） */
+        url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M30,70 L30,90 A5,5 0 0,0 35,95 L45,95 A5,5 0 0,0 50,90 L50,70 L48,60 L48,40 L32,40 L32,60 Z" fill="none" stroke="white" stroke-width="2" opacity="0.3"/><rect x="60" y="50" width="20" height="30" rx="2" fill="none" stroke="white" stroke-width="2" opacity="0.3"/></svg>');
+      background-size: 50px 50px, 30px 30px, 120px 120px;
+      background-position: 0 0, 15px 15px, 0 0;
+      animation: fizzUp 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fizzUp {
+      0% { background-position: 0 1000px, 15px 1015px, 0 500px; }
+      100% { background-position: 0 0, 15px 15px, 0 0; }
     }
 
     .wrap{
@@ -60,8 +99,16 @@
       top: 0;
       z-index: 30;
       padding-top: 10px;
-      background: linear-gradient(to bottom, rgba(243,245,251,1), rgba(243,245,251,0.75));
-      backdrop-filter: blur(10px);
+      /* グラスモーフィズム（氷っぽい質感） */
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      border-radius: 0 0 20px 20px;
+      margin: 0 -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
     .controls{
@@ -75,7 +122,7 @@
     .btn{
       border:0;
       padding: 10px 14px;
-      border-radius: 14px;
+      border-radius: 20px; /* 丸みを強く */
       font-weight: 800;
       cursor:pointer;
       user-select:none;
@@ -84,11 +131,26 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.1s, box-shadow 0.1s;
     }
-    .btn.dark{ background:var(--btnDark); color:var(--btnDarkText); }
-    .btn.light{ background:var(--btnLight); color: #1a2450; }
-    .btn.danger{ background:var(--dangerBg); color:var(--dangerText); }
+    .btn:active{ transform: translateY(2px); box-shadow: none; }
+
+    .btn.dark{ 
+      background: var(--btnDark); 
+      color: var(--btnDarkText); 
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .btn.light{ 
+      background: var(--btnLight); 
+      color: var(--colaBrown); 
+      border: 1px solid rgba(228, 0, 43, 0.1);
+    }
+    .btn.danger{ 
+      background: var(--dangerBg); 
+      color: var(--dangerText); 
+      border: 1px solid var(--dangerText);
+    }
 
     .btn.icon{
       width: 44px;
@@ -100,9 +162,9 @@
       margin-top: 8px;
       padding: 12px 12px 10px;
       border-radius: 18px;
-      border: 1px solid var(--line);
-      background: var(--card);
-      box-shadow: 0 10px 30px rgba(10,20,60,0.06);
+      border: 1px solid rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 10px 30px rgba(50,10,10,0.15);
       display:none;
     }
     .fontRow{
@@ -114,28 +176,38 @@
     .fontRow label{
       min-width: 92px;
       font-weight: 900;
-      color:#2b3245;
+      color: var(--colaBrown);
       font-size: 13px;
     }
-    .fontRow input[type="range"]{ flex:1; }
+    .fontRow input[type="range"]{ flex:1; accent-color: var(--colaRed); }
     .fontVal{
       min-width: 54px;
       text-align:right;
       font-weight: 900;
-      color:#2b3245;
+      color: var(--colaBrown);
       font-size: 13px;
     }
 
     .card{
-      background:var(--card);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(10,20,60,0.06);
+      background: var(--card);
+      border: 1px solid white;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(60, 10, 20, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    /* カード上部の光沢演出 */
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, white, transparent);
+      opacity: 0.6;
     }
 
     .section{
       padding: 14px;
-      margin-top: 12px;
+      margin-top: 16px;
     }
 
     .headerRow{
@@ -150,6 +222,8 @@
       font-size: 22px;
       font-weight: 900;
       letter-spacing: .2px;
+      color: var(--colaRed); /* タイトルを赤に */
+      text-shadow: 0 2px 0 rgba(255,255,255,1);
     }
     .count{
       font-size: 14px;
@@ -162,11 +236,12 @@
       font-size: 13px;
       line-height: 1.35;
       margin: 6px 0 10px;
+      font-weight: 500;
     }
 
     .pasteBox{
       width:100%;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 16px;
       padding: 12px;
       font-size: 15px;
@@ -174,11 +249,12 @@
       min-height: 92px;
       resize: vertical;
       outline: none;
-      background: #fbfcff;
+      background: #fff;
+      color: var(--colaBrown);
     }
     .pasteBox:focus{
-      border-color: rgba(122,140,255,0.8);
-      box-shadow: 0 0 0 4px rgba(122,140,255,0.18);
+      border-color: var(--colaRed);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
     }
 
     .pasteActions{
@@ -210,10 +286,10 @@
     }
 
     .gridHeader{
-      background: #f1f3f7;
+      background: #fbf0f0; /* 薄い赤系 */
       border-bottom: 1px solid var(--line);
       font-weight: 900;
-      color: #2b3245;
+      color: var(--colaBrown);
       letter-spacing: .2px;
     }
 
@@ -231,7 +307,7 @@
       align-items:center;
       justify-content:center;
       font-weight: 900;
-      color: #1a2236;
+      color: var(--colaBrown);
     }
     .numGhost{
       position:absolute;
@@ -271,12 +347,13 @@
       font-weight: 900;
       letter-spacing: .2px;
       min-width: 0;
-      font-size: 16px; /* iOSズーム対策：固定 */
+      color: var(--text);
+      font-size: 16px;
     }
     .cellInput:focus{
-      background: #f7f9ff;
-      border-color: rgba(122,140,255,0.75);
-      box-shadow: 0 0 0 4px rgba(122,140,255,0.18);
+      background: #fff5f5;
+      border-color: var(--colaRed);
+      box-shadow: 0 0 0 4px rgba(228,0,43,0.1);
     }
 
     .view-input .cellWrap{
@@ -302,8 +379,8 @@
       width: 34px;
       height: 34px;
       border-radius: 12px;
-      border: 1px solid #cfd7ff;
-      background: #eef2ff;
+      border: 1px solid #e6caca;
+      background: #fff;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -324,8 +401,9 @@
       cursor:pointer;
       min-width: 0;
       font-size: var(--uiCopyFont);
+      transition: background 0.1s;
     }
-    .tapCell:active{ transform: scale(0.995); }
+    .tapCell:active{ transform: scale(0.99); background: rgba(0,0,0,0.02); }
 
     .flash{
       background: var(--flash) !important;
@@ -337,6 +415,7 @@
       background: var(--copiedBg) !important;
       outline: 2px solid var(--copiedOutline);
       outline-offset: -2px;
+      color: #b35f00;
     }
 
     .tabs{
@@ -345,8 +424,13 @@
       bottom: 0;
       z-index: 40;
       padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
-      background: linear-gradient(to top, rgba(243,245,251,1), rgba(243,245,251,0.6));
-      backdrop-filter: blur(10px);
+      /* 下部もグラスモーフィズム */
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
     }
     .tabBar{
       max-width: 980px;
@@ -356,35 +440,41 @@
     }
     .tabBtn{
       flex:1;
-      border: 1px solid var(--line);
-      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 20px;
       padding: 16px 0;
       font-weight: 950;
       font-size: 18px;
       cursor:pointer;
-      background: #fff;
+      background: rgba(255,255,255,0.8);
+      color: var(--colaBrown);
+      transition: all 0.2s;
     }
     .tabBtn.active{
-      background: var(--btnDark);
+      background: var(--colaRed);
       color: #fff;
-      border-color: rgba(0,0,0,0);
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(228,0,43,0.3);
+      transform: translateY(-2px);
     }
 
     .toast{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(88px + env(safe-area-inset-bottom));
-      background: rgba(15,22,36,0.92);
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      background: var(--colaDark);
       color:#fff;
-      padding: 10px 14px;
-      border-radius: 14px;
+      padding: 10px 18px;
+      border-radius: 24px;
       font-weight: 900;
       font-size: 14px;
       opacity: 0;
       pointer-events:none;
       transition: opacity .18s ease;
       z-index: 60;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
     }
     .toast.show{ opacity: 1; }
   </style>
@@ -421,7 +511,6 @@
       </div>
     </div>
 
-    <!-- 入力ビュー -->
     <div id="viewInput" class="card section view-input" style="display:none;">
       <div class="headerRow">
         <div class="hTitle">入力</div>
@@ -457,7 +546,6 @@
       </div>
     </div>
 
-    <!-- コピービュー -->
     <div id="viewCopy" class="card section view-copy" style="display:none;">
       <div class="headerRow">
         <div class="hTitle">コピー</div>
