@@ -1055,14 +1055,38 @@
         return;
       }
 
+      // ★重複チェックロジック追加
+      // 既存の有効なデータをSet化
+      const existingKeys = new Set();
+      for(const r of rows){
+        if((r.id && r.id.trim()) || (r.pin && r.pin.trim())){
+           existingKeys.add((r.id||"") + "\t" + (r.pin||""));
+        }
+      }
+
+      const uniqueItems = [];
+      for(const item of pasted){
+        const key = (item.id||"") + "\t" + (item.pin||"");
+        // 既存リストになく、かつ今回の貼り付け分内でも重複していなければ採用
+        if(!existingKeys.has(key)){
+          uniqueItems.push(item);
+          existingKeys.add(key); 
+        }
+      }
+
+      if(uniqueItems.length === 0){
+        showToast("重複データのみのため追加なし");
+        return;
+      }
+
       const start = findInsertStart();
 
-      for(let i=0;i<pasted.length;i++){
+      for(let i=0;i<uniqueItems.length;i++){
         const target = start + i;
         ensureRow(target);
 
-        rows[target].id  = normalizeId(pasted[i].id ?? "");
-        rows[target].pin = normalizePin(pasted[i].pin ?? "");
+        rows[target].id  = normalizeId(uniqueItems[i].id ?? "");
+        rows[target].pin = normalizePin(uniqueItems[i].pin ?? "");
 
         rows[target].copiedId = false;
         rows[target].copiedPin = false;
@@ -1078,7 +1102,7 @@
       
       // ★追加修正：貼り付け時に保存処理を実行
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-      showToast("追加・保存しました");
+      showToast(`${uniqueItems.length}件 追加・保存しました`);
     });
 
     // ★追加修正：ペーストエリアをクリック（フォーカス）したら全選択
