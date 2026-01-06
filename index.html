@@ -62,37 +62,33 @@
       position: relative;
       overflow-x: hidden;
 
-      /* --- 【変更点】静止画を廃止し、深いグラデーションに戻す --- */
       background-image: 
         radial-gradient(circle at 50% 40%, rgba(228, 0, 43, 0.2) 0%, transparent 60%),
         linear-gradient(to bottom, #2a0505 0%, #0a0000 100%);
     }
 
-    /* --- 【変更点】UIを邪魔しない穏やかなアニメーション背景を追加 --- */
-    
     /* レイヤー1: 大小無数の泡がゆっくり上昇 */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       z-index: -1;
-      opacity: 0.6; /* 控えめな透明度 */
+      opacity: 0.6;
       background-image: 
         radial-gradient(circle, var(--fizzColorSoft) 2px, transparent 4px), /* 極小泡 */
         radial-gradient(circle, var(--fizzColorSoft) 4px, transparent 8px), /* 小泡 */
         radial-gradient(circle, var(--fizzColorSoft) 7px, transparent 14px), /* 中泡 */
         radial-gradient(circle, rgba(255,255,255,0.08) 12px, transparent 24px); /* 大泡（薄い） */
       background-size: 
-        70px 70px,   /* 極小のパターン間隔 */
-        130px 130px, /* 小 */
-        210px 210px, /* 中 */
-        350px 350px; /* 大 */
+        70px 70px,
+        130px 130px,
+        210px 210px,
+        350px 350px;
       background-position: 
         0 0, 
         40px 70px, 
         90px 30px, 
         180px 200px;
-      /* 非常にゆっくりと上昇させる */
       animation: floatingBubblesSoft 30s linear infinite;
     }
 
@@ -102,19 +98,17 @@
       position: fixed;
       inset: 0;
       z-index: -2;
-      opacity: 0.25; /* 非常に薄くして邪魔にならないように */
-      /* SVGでボトルの形を定義 (大小2種類をランダム配置) */
+      opacity: 0.25;
       background-image: 
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 220"><path d="M30,10 C30,5 35,0 50,0 C65,0 70,5 70,10 L70,50 C85,60 95,85 95,120 L95,200 C95,215 85,220 50,220 C15,220 5,215 5,200 L5,120 C5,85 15,60 30,50 Z" fill="white"/></svg>'), /* 大ボトル */
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110"><path d="M15,5 C15,2 17,0 25,0 C33,0 35,2 35,5 L35,25 C42,30 45,40 45,60 L45,100 C45,108 40,110 25,110 C10,110 5,108 5,100 L5,60 C5,40 8,30 15,25 Z" fill="white"/></svg>'); /* 小ボトル */
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 220"><path d="M30,10 C30,5 35,0 50,0 C65,0 70,5 70,10 L70,50 C85,60 95,85 95,120 L95,200 C95,215 85,220 50,220 C15,220 5,215 5,200 L5,120 C5,85 15,60 30,50 Z" fill="white"/></svg>'),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110"><path d="M15,5 C15,2 17,0 25,0 C33,0 35,2 35,5 L35,25 C42,30 45,40 45,60 L45,100 C45,108 40,110 25,110 C10,110 5,108 5,100 L5,60 C5,40 8,30 15,25 Z" fill="white"/></svg>');
       background-size: 
-        140px auto,  /* 大サイズ */
-        70px auto;   /* 小サイズ */
+        140px auto,
+        70px auto;
       background-position: 
-        15% 70%,     /* 大の位置 */
-        80% 20%;     /* 小の位置 */
+        15% 70%,
+        80% 20%;
       background-repeat: no-repeat;
-      /* ゆっくりと上下に浮遊＋わずかな回転 */
       animation: floatingBottlesSoft 40s ease-in-out infinite alternate;
     }
 
@@ -124,15 +118,9 @@
     }
 
     @keyframes floatingBottlesSoft {
-      0% {
-        transform: translateY(50px) rotate(-3deg);
-      }
-      100% {
-        transform: translateY(-50px) rotate(3deg);
-      }
+      0% { transform: translateY(50px) rotate(-3deg); }
+      100% { transform: translateY(-50px) rotate(3deg); }
     }
-    /* --- 【変更点ここまで】 --- */
-
 
     .wrap{
       max-width: 980px;
@@ -145,7 +133,6 @@
       top: 0;
       z-index: 30;
       padding-top: 10px;
-      /* グラスモーフィズム（氷っぽい質感） */
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -168,7 +155,7 @@
     .btn{
       border:0;
       padding: 10px 14px;
-      border-radius: 20px; /* 丸みを強く */
+      border-radius: 20px;
       font-weight: 800;
       cursor:pointer;
       user-select:none;
@@ -242,7 +229,6 @@
       position: relative;
       overflow: hidden;
     }
-    /* カード上部の光沢演出 */
     .card::after {
       content: "";
       position: absolute;
@@ -268,7 +254,7 @@
       font-size: 22px;
       font-weight: 900;
       letter-spacing: .2px;
-      color: var(--colaRed); /* タイトルを赤に */
+      color: var(--colaRed);
       text-shadow: 0 2px 0 rgba(255,255,255,1);
     }
     .count{
@@ -332,7 +318,7 @@
     }
 
     .gridHeader{
-      background: #fbf0f0; /* 薄い赤系 */
+      background: #fbf0f0;
       border-bottom: 1px solid var(--line);
       font-weight: 900;
       color: var(--colaBrown);
@@ -470,7 +456,6 @@
       bottom: 0;
       z-index: 40;
       padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
-      /* 下部もグラスモーフィズム */
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -1020,7 +1005,7 @@
         pinCell.textContent = r.pin ?? "";
         if(r.copiedPin) pinCell.classList.add("copiedMark");
 
-        /* ★変更点：コピーするたびに色をトグル（1回目ON / 2回目OFF） */
+        /* ★変更点：コピーするたびに色をトグル（1回目ON / 2回目OFF）＋【機能追加】自動保存 */
         idCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
@@ -1028,7 +1013,11 @@
             r.copiedId = !r.copiedId;                // ←トグル
             idCell.classList.toggle("copiedMark", r.copiedId);
             snapshot();
-            showToast("IDをコピー");
+            
+            // ★追加：コピー時に即時保存
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+            
+            showToast("IDをコピー・保存");
           }
         });
 
@@ -1039,7 +1028,11 @@
             r.copiedPin = !r.copiedPin;             // ←トグル
             pinCell.classList.toggle("copiedMark", r.copiedPin);
             snapshot();
-            showToast("PINをコピー");
+            
+            // ★追加：コピー時に即時保存
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+            
+            showToast("PINをコピー・保存");
           }
         });
 
@@ -1101,8 +1094,7 @@
         return;
       }
 
-      // ★重複チェックロジック追加
-      // 既存の有効なデータをSet化
+      // ★重複チェックロジック
       const existingKeys = new Set();
       for(const r of rows){
         if((r.id && r.id.trim()) || (r.pin && r.pin.trim())){
@@ -1113,7 +1105,6 @@
       const uniqueItems = [];
       for(const item of pasted){
         const key = (item.id||"") + "\t" + (item.pin||"");
-        // 既存リストになく、かつ今回の貼り付け分内でも重複していなければ採用
         if(!existingKeys.has(key)){
           uniqueItems.push(item);
           existingKeys.add(key); 
@@ -1146,12 +1137,12 @@
       snapshot();
       renderAll();
       
-      // ★追加修正：貼り付け時に保存処理を実行
+      // ★貼り付け時にも自動保存
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       showToast(`${uniqueItems.length}件 追加・保存しました`);
     });
 
-    // ★追加修正：ペーストエリアをクリック（フォーカス）したら全選択
+    // ★ペーストエリアをクリック（フォーカス）したら全選択
     pasteArea.addEventListener("focus", ()=> pasteArea.select());
     pasteArea.addEventListener("click", ()=> pasteArea.select());
 
