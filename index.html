@@ -612,7 +612,7 @@
   <script>
     const STORAGE_KEY = "idpin_app_v1";
     const SETTINGS_KEY = "idpin_app_settings_v1";
-    const MAX_ROWS = 120;
+    // const MAX_ROWS = 120; // ★制限解除
 
     // row: { id, pin, editCount, lastCountedId, copiedId, copiedPin }
     let rows = [];
@@ -659,7 +659,8 @@
     }
 
     function clampRows(){
-      if(rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
+      // ★制限なしのため、何もしない
+      // if(rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
     }
 
     function ensureRow(i){
