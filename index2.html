@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ID / PIN（入力＆コピー）</title>
+  <style>
+    :root{
+      /* --- COLA THEME COLORS --- */
+      --colaRed: #e4002b;
+      --colaDark: #1a0a0a;
+      --colaBrown: #3e1414;
+      --bubble: rgba(255, 255, 255, 0.15);
+      --iceWhite: rgba(255, 255, 255, 0.93);
+
+      --bg: #1a0a0a; /* 基本背景は濃い茶黒 */
+      --card: var(--iceWhite);
+      --line: #e6caca;
+      --text: #2b0c0c;
+      --muted: #855b5b;
+
+      /* ボタン周り */
+      --btnDark: #e4002b; /* コーラレッド */
+      --btnDarkText: #ffffff;
+      --btnLight: #fff0f0;
+      
+      --dangerBg: #fff;
+      --dangerText: #e4002b;
+
+      /* コピー時の強調（シュワッとはじける青白さ） */
+      --flash: #d8f4ff;
+      --flashOutline: #5aceff;
+
+      /* #列 背景数字の濃さ */
+      --ghostBaseAlpha: 0.15;
+
+      /* 文字サイズ（ユーザーがUIで変更） */
+      --uiInputFont: 11.5px;
+      --uiCopyFont:  15px;
+      --uiInputScale: 0.71875; 
+
+      /* #列 幅 */
+      --colNum: 34px;
+
+      /* コピー済みセル（保持） */
+      --copiedBg: #ffebd6;
+      --copiedOutline: #ffa84a;
+
+      /* 穏やかな泡とボトルの色 */
+      --fizzColorSoft: rgba(255, 230, 180, 0.4);
+    }
+
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ height:100%; }
+    
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background-color: var(--colaDark);
+      color:var(--text);
+      overscroll-behavior-y: contain;
+      position: relative;
+      overflow-x: hidden;
+
+      background-image: 
+        radial-gradient(circle at 50% 40%, rgba(228, 0, 43, 0.2) 0%, transparent 60%),
+        linear-gradient(to bottom, #2a0505 0%, #0a0000 100%);
+    }
+
+    /* レイヤー1: 大小無数の泡がゆっくり上昇 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.6;
+      background-image: 
+        radial-gradient(circle, var(--fizzColorSoft) 2px, transparent 4px), /* 極小泡 */
+        radial-gradient(circle, var(--fizzColorSoft) 4px, transparent 8px), /* 小泡 */
+        radial-gradient(circle, var(--fizzColorSoft) 7px, transparent 14px), /* 中泡 */
+        radial-gradient(circle, rgba(255,255,255,0.08) 12px, transparent 24px); /* 大泡（薄い） */
+      background-size: 
+        70px 70px,
+        130px 130px,
+        210px 210px,
+        350px 350px;
+      background-position: 
+        0 0, 
+        40px 70px, 
+        90px 30px, 
+        180px 200px;
+      animation: floatingBubblesSoft 30s linear infinite;
+    }
+
+    /* レイヤー2: 大小のボトルシルエットがゆっくり浮遊 */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      opacity: 0.25;
+      background-image: 
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 220"><path d="M30,10 C30,5 35,0 50,0 C65,0 70,5 70,10 L70,50 C85,60 95,85 95,120 L95,200 C95,215 85,220 50,220 C15,220 5,215 5,200 L5,120 C5,85 15,60 30,50 Z" fill="white"/></svg>'),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110"><path d="M15,5 C15,2 17,0 25,0 C33,0 35,2 35,5 L35,25 C42,30 45,40 45,60 L45,100 C45,108 40,110 25,110 C10,110 5,108 5,100 L5,60 C5,40 8,30 15,25 Z" fill="white"/></svg>');
+      background-size: 
+        140px auto,
+        70px auto;
+      background-position: 
+        15% 70%,
+        80% 20%;
+      background-repeat: no-repeat;
+      animation: floatingBottlesSoft 40s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatingBubblesSoft {
+      from { background-position-y: 0, 70px, 30px, 200px; }
+      to   { background-position-y: -700px, -650px, -600px, -500px; }
+    }
+
+    @keyframes floatingBottlesSoft {
+      0% { transform: translateY(50px) rotate(-3deg); }
+      100% { transform: translateY(-50px) rotate(3deg); }
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 14px 14px 120px;
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding-top: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      border-radius: 0 0 20px 20px;
+      margin: 0 -10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding: 6px 0 10px;
+    }
+
+    .btn{
+      border:0;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-weight: 800;
+      cursor:pointer;
+      user-select:none;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn:active{ transform: translateY(2px); box-shadow: none; }
+
+    .btn.dark{ 
+      background: var(--btnDark); 
+      color: var(--btnDarkText); 
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .btn.light{ 
+      background: var(--btnLight); 
+      color: var(--colaBrown); 
+      border: 1px solid rgba(228, 0, 43, 0.1);
+    }
+    .btn.danger{ 
+      background: var(--dangerBg); 
+      color: var(--dangerText); 
+      border: 1px solid var(--dangerText);
+    }
+
+    .btn.icon{
+      width: 44px;
+      padding: 10px 0;
+      font-weight: 900;
+    }
+
+    .fontPanel{
+      margin-top: 8px;
+      padding: 12px 12px 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 10px 30px rgba(50,10,10,0.15);
+      display:none;
+    }
+    .fontRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 6px 0;
+    }
+    .fontRow label{
+      min-width: 92px;
+      font-weight: 900;
+      color: var(--colaBrown);
+      font-size: 13px;
+    }
+    .fontRow input[type="range"]{ flex:1; accent-color: var(--colaRed); }
+    .fontVal{
+      min-width: 54px;
+      text-align:right;
+      font-weight: 900;
+      color: var(--colaBrown);
+      font-size: 13px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid white;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(60, 10, 20, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, white, transparent);
+      opacity: 0.6;
+    }
+
+    .section{
+      padding: 14px;
+      margin-top: 16px;
+    }
+
+    .headerRow{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .hTitle{
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      color: var(--colaRed);
+      text-shadow: 0 2px 0 rgba(255,255,255,1);
+    }
+    .count{
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .help{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 6px 0 10px;
+      font-weight: 500;
+    }
+
+    .pasteBox{
+      width:100%;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 15px;
+      line-height: 1.35;
+      min-height: 92px;
+      resize: vertical;
+      outline: none;
+      background: #fff;
+      color: var(--colaBrown);
+    }
+    .pasteBox:focus{
+      border-color: var(--colaRed);
+      box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
+    }
+
+    .pasteActions{
+      display:flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .pasteActions .btn{
+      flex:1;
+      padding: 14px 14px;
+      border-radius: 18px;
+      font-size: 16px;
+    }
+
+    .grid{
+      width:100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      background: #fff;
+    }
+
+    .gridHeader, .gridRow{
+      display:grid;
+      grid-template-columns: var(--colNum) 1fr 0.78fr;
+      align-items:center;
+      column-gap: 10px;
+      padding: 12px 12px;
+    }
+
+    .gridHeader{
+      background: #fbf0f0;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+      color: var(--colaBrown);
+      letter-spacing: .2px;
+    }
+
+    .gridRow{
+      border-bottom: 1px solid var(--line);
+      position: relative;
+      background: #fff;
+    }
+    .gridRow:last-child{ border-bottom: 0; }
+
+    .numCell{
+      position: relative;
+      height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      color: var(--colaBrown);
+    }
+    .numGhost{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 1000;
+      font-size: 28px;
+      letter-spacing: -1px;
+      opacity: 1;
+      pointer-events:none;
+      transform: translateY(1px);
+    }
+    .numFront{
+      position:relative;
+      z-index:2;
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .cellWrap{
+      position: relative;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .cellInput{
+      width:100%;
+      border: 1px solid transparent;
+      background: transparent;
+      outline:none;
+      padding: 10px 44px 10px 10px;
+      border-radius: 14px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      min-width: 0;
+      color: var(--text);
+      font-size: 16px;
+    }
+    .cellInput:focus{
+      background: #fff5f5;
+      border-color: var(--colaRed);
+      box-shadow: 0 0 0 4px rgba(228,0,43,0.1);
+    }
+
+    .view-input .cellWrap{
+      transform: scale(var(--uiInputScale));
+      transform-origin: left center;
+      width: calc(100% / var(--uiInputScale));
+    }
+    .view-input .gridRow,
+    .view-input .gridHeader{
+      font-size: var(--uiInputFont);
+    }
+
+    .view-copy .gridRow,
+    .view-copy .gridHeader{
+      font-size: var(--uiCopyFont);
+    }
+
+    .copyMini{
+      position:absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid #e6caca;
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 18px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .tapCell{
+      padding: 10px 10px;
+      border-radius: 14px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      user-select: none;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor:pointer;
+      min-width: 0;
+      font-size: var(--uiCopyFont);
+      transition: background 0.1s;
+    }
+    .tapCell:active{ transform: scale(0.99); background: rgba(0,0,0,0.02); }
+
+    .flash{
+      background: var(--flash) !important;
+      outline: 2px solid var(--flashOutline);
+      outline-offset: -2px;
+    }
+
+    .copiedMark{
+      background: var(--copiedBg) !important;
+      outline: 2px solid var(--copiedOutline);
+      outline-offset: -2px;
+      color: #b35f00;
+    }
+
+    .tabs{
+      position: fixed;
+      left: 0; right: 0;
+      bottom: 0;
+      z-index: 40;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+    .tabBar{
+      max-width: 980px;
+      margin: 0 auto;
+      display:flex;
+      gap: 12px;
+    }
+    .tabBtn{
+      flex:1;
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 20px;
+      padding: 16px 0;
+      font-weight: 950;
+      font-size: 18px;
+      cursor:pointer;
+      background: rgba(255,255,255,0.8);
+      color: var(--colaBrown);
+      transition: all 0.2s;
+    }
+    .tabBtn.active{
+      background: var(--colaRed);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(228,0,43,0.3);
+      transform: translateY(-2px);
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      background: var(--colaDark);
+      color:#fff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-weight: 900;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      z-index: 60;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .toast.show{ opacity: 1; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="topbar">
+      <div class="controls">
+        <button class="btn dark" id="btnSave">保存</button>
+        <button class="btn light" id="btnLoad">読込</button>
+        <button class="btn danger" id="btnClear">全削除</button>
+
+        <button class="btn light" id="btnFont">文字サイズ</button>
+
+        <div style="flex:1"></div>
+
+        <button class="btn icon light" id="btnBack" title="戻る">←</button>
+        <button class="btn icon light" id="btnFwd" title="進む">→</button>
+      </div>
+
+      <div class="fontPanel" id="fontPanel">
+        <div class="fontRow">
+          <label for="rngInputFont">入力</label>
+          <input id="rngInputFont" type="range" min="9" max="16" step="0.5" />
+          <div class="fontVal" id="valInputFont"></div>
+        </div>
+        <div class="fontRow">
+          <label for="rngCopyFont">コピー</label>
+          <input id="rngCopyFont" type="range" min="11" max="20" step="0.5" />
+          <div class="fontVal" id="valCopyFont"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewInput" class="card section view-input" style="display:none;">
+      <div class="headerRow">
+        <div class="hTitle">入力</div>
+        <div class="count">件数：<span id="countInput">0</span></div>
+      </div>
+
+      <div class="help">
+        ここに「ID PIN」を複数行で貼り付け → 「貼り付け反映」<br/>
+        （Excel/スプレッドシートからそのままコピペOK）
+      </div>
+
+      <textarea id="pasteArea" class="pasteBox" placeholder="例：VMA1069413711 8p7s@3WD"></textarea>
+
+      <div class="pasteActions">
+        <button class="btn dark" id="btnApply">貼り付け反映</button>
+        <button class="btn light" id="btnCopyTSV">データをコピー（TSV）</button>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="headerRow" style="margin-bottom:10px;">
+        <div class="hTitle" style="font-size:18px;">ID / PIN</div>
+        <div class="count">件数：<span id="countTableInput">0</span></div>
+      </div>
+
+      <div class="grid" id="gridInput">
+        <div class="gridHeader">
+          <div>#</div>
+          <div>ID</div>
+          <div>PIN</div>
+        </div>
+        <div id="rowsInput"></div>
+      </div>
+    </div>
+
+    <div id="viewCopy" class="card section view-copy" style="display:none;">
+      <div class="headerRow">
+        <div class="hTitle">コピー</div>
+        <div class="count">件数：<span id="countCopy">0</span></div>
+      </div>
+
+      <div class="help" style="margin-bottom:12px;">
+        セルをタップすると、そのセルの文字だけコピーします。<br/>
+        1回目コピーで色がつき、2回目コピーで色が戻ります。
+      </div>
+
+      <div class="grid" id="gridCopy">
+        <div class="gridHeader">
+          <div>#</div>
+          <div>ID</div>
+          <div>PIN</div>
+        </div>
+        <div id="rowsCopy"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tabs">
+    <div class="tabBar">
+      <button class="tabBtn" id="tabInput">入力</button>
+      <button class="tabBtn" id="tabCopy">コピー</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">コピーしました</div>
+
+  <script>
+    const STORAGE_KEY = "idpin_app_v1";
+    const SETTINGS_KEY = "idpin_app_settings_v1";
+    // const MAX_ROWS = 120; // ★制限解除
+
+    // row: { id, pin, editCount, lastCountedId, copiedId, copiedPin }
+    let rows = [];
+
+    let history = [];
+    let histIdx = -1;
+
+    const viewInput = document.getElementById("viewInput");
+    const viewCopy  = document.getElementById("viewCopy");
+    const tabInput  = document.getElementById("tabInput");
+    const tabCopy   = document.getElementById("tabCopy");
+
+    const btnSave   = document.getElementById("btnSave");
+    const btnLoad   = document.getElementById("btnLoad");
+    const btnClear  = document.getElementById("btnClear");
+    const btnBack   = document.getElementById("btnBack");
+    const btnFwd    = document.getElementById("btnFwd");
+
+    const pasteArea = document.getElementById("pasteArea");
+    const btnApply  = document.getElementById("btnApply");
+    const btnCopyTSV= document.getElementById("btnCopyTSV");
+
+    const rowsInput = document.getElementById("rowsInput");
+    const rowsCopy  = document.getElementById("rowsCopy");
+
+    const countInput = document.getElementById("countInput");
+    const countCopy  = document.getElementById("countCopy");
+    const countTableInput = document.getElementById("countTableInput");
+
+    const toast = document.getElementById("toast");
+
+    const btnFont = document.getElementById("btnFont");
+    const fontPanel = document.getElementById("fontPanel");
+    const rngInputFont = document.getElementById("rngInputFont");
+    const rngCopyFont  = document.getElementById("rngCopyFont");
+    const valInputFont = document.getElementById("valInputFont");
+    const valCopyFont  = document.getElementById("valCopyFont");
+
+    function showToast(msg="コピーしました"){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=>toast.classList.remove("show"), 900);
+    }
+
+    function clampRows(){
+      // ★制限なしのため、何もしない
+      // if(rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
+    }
+
+    function ensureRow(i){
+      while(rows.length <= i){
+        rows.push({
+          id:"", pin:"",
+          editCount:0,
+          lastCountedId:"",
+          copiedId:false,
+          copiedPin:false
+        });
+      }
+    }
+
+    function snapshot(){
+      const snap = JSON.stringify(rows);
+      if(histIdx >= 0 && history[histIdx] === snap) return;
+      history = history.slice(0, histIdx + 1);
+      history.push(snap);
+      histIdx = history.length - 1;
+      updateHistBtns();
+    }
+
+    function restoreFromHistory(targetIdx){
+      if(targetIdx < 0 || targetIdx >= history.length) return;
+      histIdx = targetIdx;
+      rows = JSON.parse(history[histIdx]);
+      renderAll();
+      updateHistBtns();
+    }
+
+    function updateHistBtns(){
+      btnBack.disabled = (histIdx <= 0);
+      btnFwd.disabled  = (histIdx >= history.length - 1);
+      btnBack.style.opacity = btnBack.disabled ? 0.4 : 1;
+      btnFwd.style.opacity  = btnFwd.disabled  ? 0.4 : 1;
+    }
+
+    function nonEmptyCount(){
+      return rows.filter(r => (r.id && r.id.trim()) || (r.pin && r.pin.trim())).length;
+    }
+
+    function toTSV(){
+      const filtered = rows
+        .filter(r => (r.id && r.id.trim()) || (r.pin && r.pin.trim()));
+      return filtered.map((r, idx) => {
+        const n = idx + 1;
+        const id = r.id ?? "";
+        const pin = r.pin ?? "";
+        const c = r.editCount ?? 0;
+        return `${n}\t${id}\t${pin}\t${c}`;
+      }).join("\n");
+    }
+
+    async function writeClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        try{
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          ta.style.top = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          return true;
+        }catch(_){
+          return false;
+        }
+      }
+    }
+
+    function flashEl(el){
+      el.classList.add("flash");
+      clearTimeout(el._flashT);
+      el._flashT = setTimeout(()=>el.classList.remove("flash"), 520);
+    }
+
+    function colorForCount(n){
+      const hue = (n * 37) % 360;
+      const a = getComputedStyle(document.documentElement).getPropertyValue("--ghostBaseAlpha").trim() || "0.30";
+      return `hsla(${hue}, 70%, 45%, ${a})`;
+    }
+
+    function findInsertStart(){
+      for(let i=0;i<rows.length;i++){
+        const r = rows[i];
+        const empty = (!r.id || !r.id.trim()) && (!r.pin || !r.pin.trim());
+        if(empty) return i;
+      }
+      return rows.length;
+    }
+
+    function normalizeId(s){ return (s ?? "").trim().slice(0,13); }
+    function normalizePin(s){ return (s ?? "").trim().slice(0,8); }
+
+    function applyFontSettings(inputPx, copyPx){
+      const root = document.documentElement;
+      const inV = Number(inputPx);
+      const cpV = Number(copyPx);
+      if(Number.isFinite(inV)){
+        root.style.setProperty("--uiInputFont", `${inV}px`);
+        root.style.setProperty("--uiInputScale", String(inV / 16));
+      }
+      if(Number.isFinite(cpV)){
+        root.style.setProperty("--uiCopyFont", `${cpV}px`);
+      }
+      valInputFont.textContent = `${Number(inputPx).toFixed(1)}`;
+      valCopyFont.textContent  = `${Number(copyPx).toFixed(1)}`;
+    }
+
+    function saveSettings(inputPx, copyPx){
+      const obj = { inputFont: Number(inputPx), copyFont: Number(copyPx) };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
+    }
+
+    function loadSettings(){
+      const s = localStorage.getItem(SETTINGS_KEY);
+      if(!s) return { inputFont: 11.5, copyFont: 15 };
+      try{
+        const o = JSON.parse(s);
+        const inputFont = Number(o?.inputFont);
+        const copyFont  = Number(o?.copyFont);
+        return {
+          inputFont: Number.isFinite(inputFont) ? inputFont : 11.5,
+          copyFont:  Number.isFinite(copyFont)  ? copyFont  : 15
+        };
+      }catch(_){
+        return { inputFont: 11.5, copyFont: 15 };
+      }
+    }
+
+    btnFont.addEventListener("click", ()=>{
+      fontPanel.style.display = (fontPanel.style.display === "none" || !fontPanel.style.display) ? "block" : "none";
+    });
+
+    rngInputFont.addEventListener("input", ()=>{
+      applyFontSettings(rngInputFont.value, rngCopyFont.value);
+      saveSettings(rngInputFont.value, rngCopyFont.value);
+    });
+    rngCopyFont.addEventListener("input", ()=>{
+      applyFontSettings(rngInputFont.value, rngCopyFont.value);
+      saveSettings(rngInputFont.value, rngCopyFont.value);
+    });
+
+    function renderAll(){
+      renderInputTable();
+      renderCopyTable();
+      countInput.textContent = String(nonEmptyCount());
+      countTableInput.textContent = String(nonEmptyCount());
+      countCopy.textContent = String(nonEmptyCount());
+    }
+
+    function renderInputTable(){
+      rowsInput.innerHTML = "";
+      const count = rows.length;
+
+      for(let i=0;i<Math.max(count, 1);i++){
+        ensureRow(i);
+        const r = rows[i];
+
+        const rowEl = document.createElement("div");
+        rowEl.className = "gridRow";
+
+        const num = document.createElement("div");
+        num.className = "numCell";
+
+        const ghost = document.createElement("div");
+        ghost.className = "numGhost";
+        ghost.textContent = String(r.editCount ?? 0);
+        ghost.style.color = colorForCount(r.editCount ?? 0);
+
+        const front = document.createElement("div");
+        front.className = "numFront";
+        front.textContent = String(i+1);
+
+        num.appendChild(ghost);
+        num.appendChild(front);
+
+        const idWrap = document.createElement("div");
+        idWrap.className = "cellWrap";
+        const idInput = document.createElement("input");
+        idInput.className = "cellInput";
+        idInput.value = r.id ?? "";
+        idInput.autocomplete = "off";
+        idInput.spellcheck = false;
+        idInput.maxLength = 13;
+
+        const idCopy = document.createElement("button");
+        idCopy.type = "button";
+        idCopy.className = "copyMini";
+        idCopy.textContent = "📋";
+        idCopy.title = "IDをコピー";
+
+        const pinWrap = document.createElement("div");
+        pinWrap.className = "cellWrap";
+        const pinInput = document.createElement("input");
+        pinInput.className = "cellInput";
+        pinInput.value = r.pin ?? "";
+        pinInput.autocomplete = "off";
+        pinInput.spellcheck = false;
+        pinInput.maxLength = 8;
+
+        const pinCopy = document.createElement("button");
+        pinCopy.type = "button";
+        pinCopy.className = "copyMini";
+        pinCopy.textContent = "📋";
+        pinCopy.title = "PINをコピー";
+
+        function enableAutoSelectAll(inp){
+          inp.addEventListener("pointerdown", ()=>{
+            requestAnimationFrame(()=>{
+              try{ inp.focus({preventScroll:true}); }catch(_){}
+              setTimeout(()=>{ try{ inp.select(); }catch(_){} }, 0);
+            });
+          }, {passive:true});
+          inp.addEventListener("focus", ()=>{
+            setTimeout(()=>{ try{ inp.select(); }catch(_){} }, 0);
+          });
+        }
+        enableAutoSelectAll(idInput);
+        enableAutoSelectAll(pinInput);
+
+        let idStartValue = r.id ?? "";
+        idInput.addEventListener("focus", ()=>{ idStartValue = idInput.value ?? ""; });
+
+        idInput.addEventListener("input", ()=>{
+          r.id = normalizeId(idInput.value);
+          r.copiedId = false;
+        });
+
+        idInput.addEventListener("blur", ()=>{
+          const newVal = normalizeId(idInput.value);
+          r.id = newVal;
+
+          if(newVal !== idStartValue){
+            if((r.lastCountedId ?? "") !== newVal){
+              r.editCount = (r.editCount ?? 0) + 1;
+              r.lastCountedId = newVal;
+              ghost.textContent = String(r.editCount);
+              ghost.style.color = colorForCount(r.editCount);
+            }
+            snapshot();
+            renderCopyTable();
+            countInput.textContent = String(nonEmptyCount());
+            countTableInput.textContent = String(nonEmptyCount());
+            countCopy.textContent = String(nonEmptyCount());
+          }
+        });
+
+        pinInput.addEventListener("input", ()=>{
+          r.pin = normalizePin(pinInput.value);
+          r.copiedPin = false;
+        });
+        pinInput.addEventListener("blur", ()=>{
+          r.pin = normalizePin(pinInput.value);
+          snapshot();
+          renderCopyTable();
+          countInput.textContent = String(nonEmptyCount());
+          countTableInput.textContent = String(nonEmptyCount());
+          countCopy.textContent = String(nonEmptyCount());
+        });
+
+        idCopy.addEventListener("click", async ()=>{
+          const ok = await writeClipboard(r.id ?? "");
+          if(ok){
+            flashEl(idInput);
+            showToast("IDをコピー");
+          }
+        });
+        pinCopy.addEventListener("click", async ()=>{
+          const ok = await writeClipboard(r.pin ?? "");
+          if(ok){
+            flashEl(pinInput);
+            showToast("PINをコピー");
+          }
+        });
+
+        idWrap.appendChild(idInput);
+        idWrap.appendChild(idCopy);
+        pinWrap.appendChild(pinInput);
+        pinWrap.appendChild(pinCopy);
+
+        rowEl.appendChild(num);
+        rowEl.appendChild(idWrap);
+        rowEl.appendChild(pinWrap);
+
+        rowsInput.appendChild(rowEl);
+      }
+    }
+
+    function renderCopyTable(){
+      rowsCopy.innerHTML = "";
+      const filtered = rows
+        .map((r,idx)=>({r,idx}))
+        .filter(x => (x.r.id && x.r.id.trim()) || (x.r.pin && x.r.pin.trim()));
+
+      if(filtered.length === 0){
+        const rowEl = document.createElement("div");
+        rowEl.className = "gridRow";
+        rowEl.innerHTML = `
+          <div class="numCell"><div class="numGhost" style="color:${colorForCount(0)}">0</div><div class="numFront">-</div></div>
+          <div class="tapCell" style="color:#a0a7ba;">（データなし）</div>
+          <div class="tapCell"></div>
+        `;
+        rowsCopy.appendChild(rowEl);
+        return;
+      }
+
+      for(let i=0;i<filtered.length;i++){
+        const {r} = filtered[i];
+
+        const rowEl = document.createElement("div");
+        rowEl.className = "gridRow";
+
+        const num = document.createElement("div");
+        num.className = "numCell";
+
+        const ghost = document.createElement("div");
+        ghost.className = "numGhost";
+        ghost.textContent = String(r.editCount ?? 0);
+        ghost.style.color = colorForCount(r.editCount ?? 0);
+
+        const front = document.createElement("div");
+        front.className = "numFront";
+        front.textContent = String(i+1);
+
+        num.appendChild(ghost);
+        num.appendChild(front);
+
+        const idCell = document.createElement("div");
+        idCell.className = "tapCell";
+        idCell.textContent = r.id ?? "";
+        if(r.copiedId) idCell.classList.add("copiedMark");
+
+        const pinCell = document.createElement("div");
+        pinCell.className = "tapCell";
+        pinCell.textContent = r.pin ?? "";
+        if(r.copiedPin) pinCell.classList.add("copiedMark");
+
+        /* ★変更点：コピーするたびに色をトグル（1回目ON / 2回目OFF）＋【機能追加】自動保存 */
+        idCell.addEventListener("click", async ()=>{
+          const ok = await writeClipboard(r.id ?? "");
+          if(ok){
+            flashEl(idCell);
+            r.copiedId = !r.copiedId;                // ←トグル
+            idCell.classList.toggle("copiedMark", r.copiedId);
+            snapshot();
+            
+            // ★追加：コピー時に即時保存
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+            
+            showToast("IDをコピー・保存");
+          }
+        });
+
+        pinCell.addEventListener("click", async ()=>{
+          const ok = await writeClipboard(r.pin ?? "");
+          if(ok){
+            flashEl(pinCell);
+            r.copiedPin = !r.copiedPin;             // ←トグル
+            pinCell.classList.toggle("copiedMark", r.copiedPin);
+            snapshot();
+            
+            // ★追加：コピー時に即時保存
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+            
+            showToast("PINをコピー・保存");
+          }
+        });
+
+        rowEl.appendChild(num);
+        rowEl.appendChild(idCell);
+        rowEl.appendChild(pinCell);
+
+        rowsCopy.appendChild(rowEl);
+      }
+    }
+
+    function stripPrefix(line, label){
+      const re = new RegExp("^\\s*" + label + "\\s*[:：]\\s*", "i");
+      return line.replace(re, "").trim();
+    }
+    function isAppIdLine(line){
+      return /^\s*アプリID\s*[:：]/i.test(line) || /^\s*AppID\s*[:：]/i.test(line);
+    }
+    function isPinLine(line){
+      return /^\s*PIN\s*[:：]/i.test(line);
+    }
+
+    function parsePasted(text){
+      const lines = (text ?? "")
+        .split(/\r?\n/)
+        .map(s=>s.trim())
+        .filter(Boolean);
+
+      const out = [];
+
+      for(let i=0;i<lines.length;i++){
+        const line = lines[i];
+
+        if(isAppIdLine(line) && (i+1) < lines.length && isPinLine(lines[i+1])){
+          const idLabel = line.match(/^\s*AppID/i) ? "AppID" : "アプリID";
+          const id = normalizeId(stripPrefix(line, idLabel));
+          const pin = normalizePin(stripPrefix(lines[i+1], "PIN"));
+          out.push({id, pin});
+          i++;
+          continue;
+        }
+
+        const parts = line.split(/\s+/);
+        if(parts.length === 1){
+          out.push({id: normalizeId(parts[0]), pin:""});
+        }else{
+          out.push({id: normalizeId(parts[0] ?? ""), pin: normalizePin(parts[1] ?? "")});
+        }
+      }
+
+      return out;
+    }
+
+    // ★変更点：async関数に変更し、空欄時のクリップボード読み取りを追加
+    btnApply.addEventListener("click", async ()=>{
+      
+      // ★追加：入力エリアが空（または空白のみ）の場合、変数にクリップボード内容を入れて処理する（画面には出さない）
+      let sourceText = pasteArea.value;
+
+      if(!sourceText || !sourceText.trim()){
+        try {
+          const text = await navigator.clipboard.readText();
+          if(text) {
+            sourceText = text; // テキストエリアには入れず、変数に入れるだけ
+          }
+        } catch(e) {
+          // 権限がない場合などは何もしない
+        }
+      }
+
+      const pasted = parsePasted(sourceText);
+
+      if(pasted.length === 0){
+        showToast("貼り付けデータなし");
+        return;
+      }
+
+      // ★重複チェックロジック
+      const existingKeys = new Set();
+      for(const r of rows){
+        if((r.id && r.id.trim()) || (r.pin && r.pin.trim())){
+           existingKeys.add((r.id||"") + "\t" + (r.pin||""));
+        }
+      }
+
+      const uniqueItems = [];
+      for(const item of pasted){
+        const key = (item.id||"") + "\t" + (item.pin||"");
+        if(!existingKeys.has(key)){
+          uniqueItems.push(item);
+          existingKeys.add(key); 
+        }
+      }
+
+      if(uniqueItems.length === 0){
+        showToast("重複データのみのため追加なし");
+        return;
+      }
+
+      const start = findInsertStart();
+
+      for(let i=0;i<uniqueItems.length;i++){
+        const target = start + i;
+        ensureRow(target);
+
+        rows[target].id  = normalizeId(uniqueItems[i].id ?? "");
+        rows[target].pin = normalizePin(uniqueItems[i].pin ?? "");
+
+        rows[target].copiedId = false;
+        rows[target].copiedPin = false;
+
+        if((rows[target].lastCountedId ?? "") === ""){
+          rows[target].lastCountedId = rows[target].id;
+        }
+      }
+
+      clampRows();
+      snapshot();
+      renderAll();
+      
+      // ★貼り付け時にも自動保存
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      showToast(`${uniqueItems.length}件 追加・保存しました`);
+    });
+
+    // ★ペーストエリアをクリック（フォーカス）したら全選択
+    pasteArea.addEventListener("focus", ()=> pasteArea.select());
+    pasteArea.addEventListener("click", ()=> pasteArea.select());
+
+    btnCopyTSV.addEventListener("click", async ()=>{
+      const tsv = toTSV();
+      if(!tsv){
+        showToast("コピーするデータなし");
+        return;
+      }
+      const ok = await writeClipboard(tsv);
+      if(ok) showToast("TSVコピー");
+    });
+
+    btnSave.addEventListener("click", ()=>{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+      showToast("保存しました");
+    });
+
+    btnLoad.addEventListener("click", ()=>{
+      const s = localStorage.getItem(STORAGE_KEY);
+      if(!s){
+        showToast("保存データなし");
+        return;
+      }
+      try{
+        rows = JSON.parse(s);
+        if(!Array.isArray(rows)) rows = [];
+        snapshot();
+        renderAll();
+        showToast("読込しました");
+      }catch(e){
+        showToast("読込失敗");
+      }
+    });
+
+    btnClear.addEventListener("click", ()=>{
+      if(!confirm("本当に全削除しますか？")) return;
+      rows = [];
+      pasteArea.value = "";
+      history = [];
+      histIdx = -1;
+      snapshot();
+      renderAll();
+      showToast("全削除しました");
+    });
+
+    btnBack.addEventListener("click", ()=> restoreFromHistory(histIdx - 1));
+    btnFwd.addEventListener("click",  ()=> restoreFromHistory(histIdx + 1));
+
+    function setTab(which){
+      const isInput = (which === "input");
+      viewInput.style.display = isInput ? "" : "none";
+      viewCopy.style.display  = isInput ? "none" : "";
+      tabInput.classList.toggle("active", isInput);
+      tabCopy.classList.toggle("active", !isInput);
+    }
+    tabInput.addEventListener("click", ()=> setTab("input"));
+    tabCopy.addEventListener("click",  ()=> setTab("copy"));
+
+    function init(){
+      const s = localStorage.getItem(STORAGE_KEY);
+      if(s){
+        try{
+          const loaded = JSON.parse(s);
+          if(Array.isArray(loaded)) rows = loaded;
+        }catch(_){}
+      }
+
+      const st = loadSettings();
+      rngInputFont.value = String(st.inputFont);
+      rngCopyFont.value  = String(st.copyFont);
+      applyFontSettings(st.inputFont, st.copyFont);
+
+      snapshot();
+      renderAll();
+      setTab("input");
+    }
+    init();
+  </script>
+</body>
+</html>
