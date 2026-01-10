@@ -1148,48 +1148,28 @@
 
 
     /* =========================================
+       ★【変更】ペーストイベントでの自動処理（貼り付けられたら即実行）
+       ========================================= */
+    pasteArea.addEventListener("paste", ()=>{
+      // ペースト操作が完了して入力欄に文字が入るのを少し待つ
+      setTimeout(async ()=>{
+        let sourceText = pasteArea.value;
+        if(sourceText && sourceText.trim()){
+           await executeImport(sourceText);
+        }
+      }, 100);
+    });
+
+    /* =========================================
        ★【変更】ボタンクリック時の処理
        ========================================= */
     btnApply.addEventListener("click", async ()=>{
-      
+      // 入力欄の内容を取得して処理（ペーストイベントで既に処理済みなら重複データとして無視されるので安全）
       let sourceText = pasteArea.value;
-
-      // 入力欄が空なら、クリップボードから読み取りを試みる
-      if(!sourceText || !sourceText.trim()){
-        try {
-          const text = await navigator.clipboard.readText();
-          if(text) {
-            sourceText = text; 
-            pasteArea.value = text; // 画面にも反映（任意）
-          }
-        } catch(e) {
-          // 権限がない、またはブロックされた場合は何もしない
-        }
-      }
-
-      // 共通処理を実行
-      await executeImport(sourceText);
-    });
-
-
-    /* =========================================
-       ★【追加】アプリ切り替え(表示)時の自動処理
-       ========================================= */
-    document.addEventListener("visibilitychange", async () => {
-      if (document.visibilityState === "visible") {
-        // 入力エリアが空の場合のみ実行
-        if(!pasteArea.value || !pasteArea.value.trim()){
-          try {
-            const text = await navigator.clipboard.readText();
-            if(text && text.trim()) {
-              // 画面には出さず、直接処理へ
-              await executeImport(text);
-            }
-          } catch(e) {
-            // 自動読み取りがブロックされた場合は静かに無視する
-            console.log("Auto-paste blocked by OS"); 
-          }
-        }
+      if(sourceText && sourceText.trim()){
+         await executeImport(sourceText);
+      } else {
+         showToast("貼り付けデータなし");
       }
     });
 
