@@ -1087,7 +1087,21 @@
       return out;
     }
 
-    btnApply.addEventListener("click", ()=>{
+    // ★変更点：async関数に変更し、空欄時のクリップボード読み取りを追加
+    btnApply.addEventListener("click", async ()=>{
+      
+      // ★追加：入力エリアが空（または空白のみ）の場合、クリップボードから読み取る
+      if(!pasteArea.value || !pasteArea.value.trim()){
+        try {
+          const text = await navigator.clipboard.readText();
+          if(text) {
+            pasteArea.value = text;
+          }
+        } catch(e) {
+          // 権限がない場合などは無視して通常の「空欄」処理へ進む
+        }
+      }
+
       const pasted = parsePasted(pasteArea.value);
 
       if(pasted.length === 0){
