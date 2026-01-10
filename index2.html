@@ -1087,23 +1087,10 @@
       return out;
     }
 
-    // ★変更点：async関数に変更し、空欄時のクリップボード読み取りを追加
-    btnApply.addEventListener("click", async ()=>{
-      
-      // ★追加：入力エリアが空（または空白のみ）の場合、変数にクリップボード内容を入れて処理する（画面には出さない）
-      let sourceText = pasteArea.value;
-
-      if(!sourceText || !sourceText.trim()){
-        try {
-          const text = await navigator.clipboard.readText();
-          if(text) {
-            sourceText = text; // テキストエリアには入れず、変数に入れるだけ
-          }
-        } catch(e) {
-          // 権限がない場合などは何もしない
-        }
-      }
-
+    /* =========================================
+       ★【追加】データ登録・保存の共通処理関数
+       ========================================= */
+    async function executeImport(sourceText){
       const pasted = parsePasted(sourceText);
 
       if(pasted.length === 0){
@@ -1111,7 +1098,7 @@
         return;
       }
 
-      // ★重複チェックロジック
+      // 重複チェックロジック
       const existingKeys = new Set();
       for(const r of rows){
         if((r.id && r.id.trim()) || (r.pin && r.pin.trim())){
@@ -1157,7 +1144,55 @@
       // ★貼り付け時にも自動保存
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       showToast(`${uniqueItems.length}件 追加・保存しました`);
+    }
+
+
+    /* =========================================
+       ★【変更】ボタンクリック時の処理
+       ========================================= */
+    btnApply.addEventListener("click", async ()=>{
+      
+      let sourceText = pasteArea.value;
+
+      // 入力欄が空なら、クリップボードから読み取りを試みる
+      if(!sourceText || !sourceText.trim()){
+        try {
+          const text = await navigator.clipboard.readText();
+          if(text) {
+            sourceText = text; 
+            pasteArea.value = text; // 画面にも反映（任意）
+          }
+        } catch(e) {
+          // 権限がない、またはブロックされた場合は何もしない
+        }
+      }
+
+      // 共通処理を実行
+      await executeImport(sourceText);
     });
+
+
+    /* =========================================
+       ★【追加】アプリ切り替え(表示)時の自動処理
+       ========================================= */
+    document.addEventListener("visibilitychange", async () => {
+      if (document.visibilityState === "visible") {
+        // 入力エリアが空の場合のみ実行
+        if(!pasteArea.value || !pasteArea.value.trim()){
+          try {
+            const text = await navigator.clipboard.readText();
+            if(text && text.trim()) {
+              // 画面には出さず、直接処理へ
+              await executeImport(text);
+            }
+          } catch(e) {
+            // 自動読み取りがブロックされた場合は静かに無視する
+            console.log("Auto-paste blocked by OS"); 
+          }
+        }
+      }
+    });
+
 
     // ★ペーストエリアをクリック（フォーカス）したら全選択
     pasteArea.addEventListener("focus", ()=> pasteArea.select());
