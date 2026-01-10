@@ -388,7 +388,7 @@
       box-shadow: 0 0 0 4px rgba(228,0,43,0.1);
     }
 
-    .view--input .cellWrap{
+    .view-input .cellWrap{
       transform: scale(var(--uiInputScale));
       transform-origin: left center;
       width: calc(100% / var(--uiInputScale));
@@ -1087,24 +1087,8 @@
       return out;
     }
 
-    // ★変更点：async関数に変更し、空欄時のクリップボード読み取りを追加
-    btnApply.addEventListener("click", async ()=>{
-      
-      // ★追加：入力エリアが空（または空白のみ）の場合、変数にクリップボード内容を入れて処理する（画面には出さない）
-      let sourceText = pasteArea.value;
-
-      if(!sourceText || !sourceText.trim()){
-        try {
-          const text = await navigator.clipboard.readText();
-          if(text) {
-            sourceText = text; // テキストエリアには入れず、変数に入れるだけ
-          }
-        } catch(e) {
-          // 権限がない場合などは何もしない
-        }
-      }
-
-      const pasted = parsePasted(sourceText);
+    btnApply.addEventListener("click", ()=>{
+      const pasted = parsePasted(pasteArea.value);
 
       if(pasted.length === 0){
         showToast("貼り付けデータなし");
