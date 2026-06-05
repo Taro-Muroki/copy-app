@@ -242,6 +242,36 @@
       margin-top: 16px;
     }
 
+    /* ★追加: 入力タブ専用のFlexboxレイアウト（スクロール制御用） */
+    .active-flex {
+      display: flex !important;
+      flex-direction: column;
+      /* スマホ・PC両方で画面内に収まるように計算（約170pxは上下のバーの分） */
+      height: calc(100vh - 170px - env(safe-area-inset-bottom));
+    }
+    @supports (height: 100dvh) {
+      .active-flex {
+        height: calc(100dvh - 170px - env(safe-area-inset-bottom));
+      }
+    }
+    /* 表以外の部分は縮小させず固定化する */
+    .active-flex > :not(#gridInput) { flex-shrink: 0; }
+    
+    .active-flex #gridInput {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0; /* これがないと縮まない */
+    }
+    .active-flex .gridHeader { flex-shrink: 0; }
+    /* ★表の中身だけスクロールさせる */
+    .active-flex #rowsInput {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 20px;
+    }
+
     .headerRow{
       display:flex;
       align-items: baseline;
@@ -578,9 +608,12 @@
     </div>
 
     <div id="viewCopy" class="card section view-copy" style="display:none;">
-      <div class="headerRow">
+      <div class="headerRow" style="align-items: center;">
         <div class="hTitle">コピー</div>
-        <div class="count">件数：<span id="countCopy">0</span></div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="count">件数：<span id="countCopy">0</span></div>
+          <button class="btn danger" id="btnDeleteCopied" style="font-size: 13px; padding: 6px 12px; border-radius:12px;">完了分を削除</button>
+        </div>
       </div>
 
       <div class="help" style="margin-bottom:12px;">
@@ -612,9 +645,7 @@
   <script>
     const STORAGE_KEY = "idpin_app_v1";
     const SETTINGS_KEY = "idpin_app_settings_v1";
-    // const MAX_ROWS = 120; // ★制限解除
 
-    // row: { id, pin, editCount, lastCountedId, copiedId, copiedPin }
     let rows = [];
 
     let history = [];
@@ -634,6 +665,9 @@
     const pasteArea = document.getElementById("pasteArea");
     const btnApply  = document.getElementById("btnApply");
     const btnCopyTSV= document.getElementById("btnCopyTSV");
+
+    /* ★追加：一括削除ボタン */
+    const btnDeleteCopied = document.getElementById("btnDeleteCopied");
 
     const rowsInput = document.getElementById("rowsInput");
     const rowsCopy  = document.getElementById("rowsCopy");
@@ -659,8 +693,7 @@
     }
 
     function clampRows(){
-      // ★制限なしのため、何もしない
-      // if(rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
+      // 制限なし
     }
 
     function ensureRow(i){
@@ -1006,18 +1039,14 @@
         pinCell.textContent = r.pin ?? "";
         if(r.copiedPin) pinCell.classList.add("copiedMark");
 
-        /* ★変更点：コピーするたびに色をトグル（1回目ON / 2回目OFF）＋【機能追加】自動保存 */
         idCell.addEventListener("click", async ()=>{
           const ok = await writeClipboard(r.id ?? "");
           if(ok){
             flashEl(idCell);
-            r.copiedId = !r.copiedId;                // ←トグル
+            r.copiedId = !r.copiedId;
             idCell.classList.toggle("copiedMark", r.copiedId);
             snapshot();
-            
-            // ★追加：コピー時に即時保存
             localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-            
             showToast("IDをコピー・保存");
           }
         });
@@ -1026,13 +1055,10 @@
           const ok = await writeClipboard(r.pin ?? "");
           if(ok){
             flashEl(pinCell);
-            r.copiedPin = !r.copiedPin;             // ←トグル
+            r.copiedPin = !r.copiedPin;
             pinCell.classList.toggle("copiedMark", r.copiedPin);
             snapshot();
-            
-            // ★追加：コピー時に即時保存
             localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-            
             showToast("PINをコピー・保存");
           }
         });
@@ -1087,15 +1113,14 @@
       return out;
     }
 
-    btnApply.addEventListener("click", ()=>{
-      const pasted = parsePasted(pasteArea.value);
+    async function executeImport(sourceText){
+      const pasted = parsePasted(sourceText);
 
       if(pasted.length === 0){
         showToast("貼り付けデータなし");
         return;
       }
 
-      // ★重複チェックロジック
       const existingKeys = new Set();
       for(const r of rows){
         if((r.id && r.id.trim()) || (r.pin && r.pin.trim())){
@@ -1138,12 +1163,28 @@
       snapshot();
       renderAll();
       
-      // ★貼り付け時にも自動保存
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       showToast(`${uniqueItems.length}件 追加・保存しました`);
+    }
+
+    pasteArea.addEventListener("paste", ()=>{
+      setTimeout(async ()=>{
+        let sourceText = pasteArea.value;
+        if(sourceText && sourceText.trim()){
+           await executeImport(sourceText);
+        }
+      }, 100);
     });
 
-    // ★ペーストエリアをクリック（フォーカス）したら全選択
+    btnApply.addEventListener("click", async ()=>{
+      let sourceText = pasteArea.value;
+      if(sourceText && sourceText.trim()){
+         await executeImport(sourceText);
+      } else {
+         showToast("貼り付けデータなし");
+      }
+    });
+
     pasteArea.addEventListener("focus", ()=> pasteArea.select());
     pasteArea.addEventListener("click", ()=> pasteArea.select());
 
@@ -1190,16 +1231,61 @@
       showToast("全削除しました");
     });
 
+    /* ★追加：完了データの一括削除処理 */
+    function isFullyCopied(r) {
+      const hasId = r.id && r.id.trim() !== "";
+      const hasPin = r.pin && r.pin.trim() !== "";
+      if (!hasId && !hasPin) return false; // 空行は対象外
+      // 入力されているデータがコピーされていなければ false
+      if (hasId && !r.copiedId) return false;
+      if (hasPin && !r.copiedPin) return false;
+      return true; // 入力されているすべてのデータがコピー済み
+    }
+
+    btnDeleteCopied.addEventListener("click", () => {
+      // 削除対象となるインデックス（行番号）を見つける
+      const toDeleteIdx = [];
+      rows.forEach((r, idx) => {
+        if(isFullyCopied(r)) {
+          toDeleteIdx.push(idx);
+        }
+      });
+
+      if(toDeleteIdx.length === 0){
+        showToast("削除する完了データがありません");
+        return;
+      }
+
+      // 確認ダイアログを表示
+      if(confirm(`削除データが ${toDeleteIdx.length} 件あります。削除してもいいですか？`)){
+        // 削除対象の行を除外して、新しいリストを作る
+        rows = rows.filter((r, idx) => !toDeleteIdx.includes(idx));
+        
+        snapshot();
+        renderAll();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); // すぐに保存
+        showToast("完了データを削除しました");
+      }
+    });
+
     btnBack.addEventListener("click", ()=> restoreFromHistory(histIdx - 1));
     btnFwd.addEventListener("click",  ()=> restoreFromHistory(histIdx + 1));
 
+    /* ★変更：入力タブのときだけ flex レイアウトにする */
     function setTab(which){
       const isInput = (which === "input");
-      viewInput.style.display = isInput ? "" : "none";
-      viewCopy.style.display  = isInput ? "none" : "";
+      if(isInput) {
+        viewInput.classList.add("active-flex");
+        viewCopy.style.display  = "none";
+      } else {
+        viewInput.classList.remove("active-flex");
+        viewInput.style.display = "none";
+        viewCopy.style.display  = "";
+      }
       tabInput.classList.toggle("active", isInput);
       tabCopy.classList.toggle("active", !isInput);
     }
+    
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
