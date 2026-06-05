@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>ID / PIN（入力＆コピー）</title>
   <style>
     :root{
@@ -50,7 +50,8 @@
       --fizzColorSoft: rgba(255, 230, 180, 0.4);
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    /* ★修正：touch-action: manipulation を追加し、ボタン連打時のズームをさらに防止 */
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
     html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } 
     
     body{
@@ -275,11 +276,10 @@
       box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
     }
     
-    /* ★追加：全選択（ハイライト）時の色を少し目立たせる */
+    /* 全選択（ハイライト）時の色を少し目立たせる */
     .pasteBox::selection {
         background: rgba(228, 0, 43, 0.2); 
     }
-
 
     .pasteActions{
       display:flex;
@@ -1173,18 +1173,39 @@
       return true;
     }
 
-    // ★入力エリアの「全選択（ハイライト）」を確実に実行する関数
-    function selectAllTextArea() {
-      // 少しタイミングをずらすことで、ブラウザ側の選択解除を防ぐ
-      setTimeout(() => {
-        pasteArea.focus();
-        pasteArea.select();
-      }, 50);
+    // ★修正：テキストエリアをタップ・フォーカスした時に、クリップボードからの反映と全選択を同時に行う
+    async function handlePasteAreaInteraction() {
+        if (isAutoPasteEnabled) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim()) {
+                    // 最新のクリップボードを常に枠内に入れる
+                    pasteArea.value = text;
+                    
+                    if (text !== lastAutoPastedText) {
+                        const pasted = parsePasted(text);
+                        if (pasted.length > 0) {
+                            const success = await executeImport(text, false);
+                            if(success) {
+                               lastAutoPastedText = text; 
+                               showToast("自動反映しました");
+                            }
+                        }
+                    }
+                }
+            } catch (err) {}
+        }
+        
+        // ★自動コピペのON/OFFに関わらず、確実に全選択（ハイライト）状態にする
+        setTimeout(() => {
+            pasteArea.focus();
+            pasteArea.select();
+        }, 50);
     }
 
-    // タップ時（フォーカス時）は常に全選択
-    pasteArea.addEventListener("focus", selectAllTextArea);
-    pasteArea.addEventListener("click", selectAllTextArea);
+    // 以前の隠し処理（document.addEventListener）は削除し、テキストエリア本体のタップに魔法をかける
+    pasteArea.addEventListener("click", handlePasteAreaInteraction);
+    pasteArea.addEventListener("focus", handlePasteAreaInteraction);
 
     pasteArea.addEventListener("paste", ()=>{
       setTimeout(async ()=>{
@@ -1299,32 +1320,6 @@
     
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
-
-    // ★魔法の自動ペースト機能（画面のどこかをタップした瞬間に発動）
-    document.addEventListener("click", async (e) => {
-        if (!isAutoPasteEnabled) return;
-
-        // タップした要素がテキストエリアそのものの場合は、全選択が優先されるようにスキップ
-        if (e.target === pasteArea) return;
-        
-        try {
-            const text = await navigator.clipboard.readText();
-            if (text && text.trim() && text !== lastAutoPastedText) {
-                const pasted = parsePasted(text);
-                if (pasted.length > 0) {
-                    const success = await executeImport(text, false);
-                    if(success) {
-                       lastAutoPastedText = text; 
-                       showToast("クリップボードから自動反映しました");
-                       pasteArea.value = text;
-                       // ★反映後、確実にテキストエリアを全選択（ハイライト）状態にする
-                       selectAllTextArea();
-                    }
-                }
-            }
-        } catch (err) {
-        }
-    });
 
     function init(){
       const s = localStorage.getItem(STORAGE_KEY);
