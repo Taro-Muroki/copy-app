@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ID / PIN（入力＆コピー）</title>
   <style>
     :root{
@@ -50,7 +50,7 @@
       --fizzColorSoft: rgba(255, 230, 180, 0.4);
     }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } 
     
     body{
@@ -169,10 +169,6 @@
     .btn.light{ background: var(--btnLight); color: var(--colaBrown); border: 1px solid rgba(228, 0, 43, 0.1); }
     .btn.danger{ background: var(--dangerBg); color: var(--dangerText); border: 1px solid var(--dangerText); }
     .btn.icon{ width: 36px; padding: 8px 0; font-weight: 900; } 
-    
-    /* 自動コピペボタン用スタイル */
-    .btn.toggle-on { background: var(--colaRed); color: white; border: 2px solid rgba(255,255,255,0.2); }
-    .btn.toggle-off { background: #0056b3; color: white; border: 2px solid rgba(255,255,255,0.2); }
 
     .fontPanel{
       margin-top: 4px;
@@ -226,7 +222,9 @@
       margin: 0;
       white-space: nowrap;
     }
-    
+    .count{ font-size: 12px; color: var(--muted); font-weight: 800; white-space: nowrap; }
+
+    /* ★追加：名前入力用テキストボックス */
     .titleInput {
       font-size: 16px;
       font-weight: 900;
@@ -248,8 +246,6 @@
       font-weight: 500;
     }
 
-    .count{ font-size: 12px; color: var(--muted); font-weight: 800; white-space: nowrap;}
-
     .paste-group {
       display: flex;
       gap: 6px;
@@ -268,16 +264,13 @@
       background: #fff;
       color: var(--colaBrown);
     }
-    .pasteBox::placeholder { color: #aaa; }
+    .pasteBox::placeholder {
+        color: #aaa; 
+    }
     .pasteBox:focus{
       border-color: var(--colaRed);
       box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
     }
-    
-    .pasteBox::selection {
-        background: rgba(228, 0, 43, 0.2); 
-    }
-
     .pasteActions{
       display:flex;
       flex-direction: column;
@@ -508,8 +501,15 @@
     }
     .toast.show{ opacity: 1; }
 
-    .view-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-    .fixed-header-area { flex-shrink: 0; }
+    .view-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    .fixed-header-area {
+        flex-shrink: 0;
+    }
   </style>
 </head>
 
@@ -544,10 +544,7 @@
     <div id="viewInput" class="card section view-input view-container" style="display:none;">
       <div class="fixed-header-area">
         <div class="headerRow" style="margin-bottom: 2px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-              <div class="hTitle">入力</div>
-              <button id="btnAutoPaste" class="btn toggle-on" style="padding: 4px 8px; font-size: 11px; border-radius: 8px;">自動コピペ: ON</button>
-          </div>
+          <div class="hTitle">入力</div>
         </div>
 
         <div class="paste-group">
@@ -617,7 +614,6 @@
     const SETTINGS_KEY = "idpin_app_settings_v1";
 
     let rows = [];
-    let isAutoPasteEnabled = true;
 
     let history = [];
     let histIdx = -1;
@@ -632,7 +628,6 @@
     const btnClear  = document.getElementById("btnClear");
     const btnBack   = document.getElementById("btnBack");
     const btnFwd    = document.getElementById("btnFwd");
-    const btnAutoPaste = document.getElementById("btnAutoPaste");
 
     const pasteArea = document.getElementById("pasteArea");
     const btnApply  = document.getElementById("btnApply");
@@ -778,11 +773,10 @@
       valCopyFont.textContent  = `${Number(copyPx).toFixed(1)}`;
     }
 
-    function saveSettings(inputPx, copyPx, autoPaste, tabName){
+    function saveSettings(inputPx, copyPx, tabName){
       const obj = { 
         inputFont: Number(inputPx), 
         copyFont: Number(copyPx),
-        autoPaste: autoPaste,
         tabName: tabName
       };
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
@@ -790,7 +784,7 @@
 
     function loadSettings(){
       const s = localStorage.getItem(SETTINGS_KEY);
-      if(!s) return { inputFont: 11.5, copyFont: 15, autoPaste: true, tabName: "" };
+      if(!s) return { inputFont: 11.5, copyFont: 15, tabName: "" };
       try{
         const o = JSON.parse(s);
         const inputFont = Number(o?.inputFont);
@@ -798,11 +792,10 @@
         return {
           inputFont: Number.isFinite(inputFont) ? inputFont : 11.5,
           copyFont:  Number.isFinite(copyFont)  ? copyFont  : 15,
-          autoPaste: o?.autoPaste !== undefined ? o.autoPaste : true,
           tabName: o?.tabName || ""
         };
       }catch(_){
-        return { inputFont: 11.5, copyFont: 15, autoPaste: true, tabName: "" };
+        return { inputFont: 11.5, copyFont: 15, tabName: "" };
       }
     }
 
@@ -812,34 +805,17 @@
 
     rngInputFont.addEventListener("input", ()=>{
       applyFontSettings(rngInputFont.value, rngCopyFont.value);
-      saveSettings(rngInputFont.value, rngCopyFont.value, isAutoPasteEnabled, copyTabName.value);
+      saveSettings(rngInputFont.value, rngCopyFont.value, copyTabName.value);
     });
     rngCopyFont.addEventListener("input", ()=>{
       applyFontSettings(rngInputFont.value, rngCopyFont.value);
-      saveSettings(rngInputFont.value, rngCopyFont.value, isAutoPasteEnabled, copyTabName.value);
+      saveSettings(rngInputFont.value, rngCopyFont.value, copyTabName.value);
     });
 
+    // ★名前の保存
     copyTabName.addEventListener("input", () => {
-       saveSettings(rngInputFont.value, rngCopyFont.value, isAutoPasteEnabled, copyTabName.value);
+       saveSettings(rngInputFont.value, rngCopyFont.value, copyTabName.value);
     });
-
-    btnAutoPaste.addEventListener("click", () => {
-      isAutoPasteEnabled = !isAutoPasteEnabled;
-      updateAutoPasteBtn();
-      saveSettings(rngInputFont.value, rngCopyFont.value, isAutoPasteEnabled, copyTabName.value);
-    });
-
-    function updateAutoPasteBtn() {
-      if(isAutoPasteEnabled) {
-        btnAutoPaste.textContent = "自動コピペ: ON";
-        btnAutoPaste.classList.remove("toggle-off");
-        btnAutoPaste.classList.add("toggle-on");
-      } else {
-        btnAutoPaste.textContent = "自動コピペ: OFF";
-        btnAutoPaste.classList.remove("toggle-on");
-        btnAutoPaste.classList.add("toggle-off");
-      }
-    }
 
     function renderAll(){
       renderInputTable();
@@ -1077,6 +1053,7 @@
       return /^\s*PIN\s*[:：]/i.test(line);
     }
 
+    // ★追加：3つのルールを適用
     function parsePasted(text){
       const lines = (text ?? "")
         .split(/\r?\n/)
@@ -1088,6 +1065,7 @@
       for(let i=0;i<lines.length;i++){
         const line = lines[i];
 
+        // パターンB（特殊なラベル表記）
         if(isAppIdLine(line) && (i+1) < lines.length && isPinLine(lines[i+1])){
           const idLabel = line.match(/^\s*AppID/i) ? "AppID" : "アプリID";
           const id = normalizeId(stripPrefix(line, idLabel));
@@ -1097,12 +1075,14 @@
           continue;
         }
 
+        // パターンC（TSVデータ）
         const tabParts = line.split('\t');
         if (tabParts.length === 4 && /^\d+$/.test(tabParts[0].trim()) && /^\d+$/.test(tabParts[3].trim())) {
           out.push({id: normalizeId(tabParts[1]), pin: normalizePin(tabParts[2])});
           continue;
         }
 
+        // パターンA（Excel等からの通常コピペ）
         const parts = line.split(/\s+/);
         if(parts.length === 1){
           out.push({id: normalizeId(parts[0]), pin:""});
@@ -1114,12 +1094,12 @@
       return out;
     }
 
-    async function executeImport(sourceText, showMsg = true){
+    async function executeImport(sourceText){
       const pasted = parsePasted(sourceText);
 
       if(pasted.length === 0){
-        if(showMsg) showToast("貼り付けデータなし");
-        return false;
+        showToast("貼り付けデータなし");
+        return;
       }
 
       const existingKeys = new Set();
@@ -1139,8 +1119,8 @@
       }
 
       if(uniqueItems.length === 0){
-        if(showMsg) showToast("重複データのみのため追加なし");
-        return false;
+        showToast("重複データのみのため追加なし");
+        return;
       }
 
       const start = findInsertStart();
@@ -1165,70 +1145,29 @@
       renderAll();
       
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-      if(showMsg) showToast(`${uniqueItems.length}件 追加・保存しました`);
-      return true;
+      showToast(`${uniqueItems.length}件 追加・保存しました`);
     }
 
-    // ★テキストエリアのタップ・フォーカス時は「確実に全選択だけ」を行う
-    function selectAllTextArea() {
-      setTimeout(() => {
-        pasteArea.focus();
-        pasteArea.select();
-      }, 50);
-    }
-    pasteArea.addEventListener("click", selectAllTextArea);
-    pasteArea.addEventListener("focus", selectAllTextArea);
-
-
-    // ★「貼り付け」ボタンを押した時に、クリップボードからの反映と全選択を行う
-    btnApply.addEventListener("click", async ()=>{
-      if (!isAutoPasteEnabled) {
-         // OFFの時は手動で入力された文字だけで処理する
-         let sourceText = pasteArea.value;
-         if(sourceText && sourceText.trim()){
-            await executeImport(sourceText);
-         } else {
-            showToast("貼り付けデータなし");
-         }
-         return;
-      }
-
-      // ONの時はクリップボードを読みに行く
-      try {
-          const text = await navigator.clipboard.readText();
-          if (text && text.trim()) {
-              // クリップボードの文字をテキストエリアに表示
-              pasteArea.value = text;
-              // リストへ反映
-              await executeImport(text);
-          } else {
-             showToast("コピーされたデータがありません");
-          }
-      } catch (err) {
-          // 権限がない場合などは、手動で入力された文字で処理を試みる
-          let sourceText = pasteArea.value;
-          if(sourceText && sourceText.trim()){
-             await executeImport(sourceText);
-          } else {
-             showToast("クリップボードへのアクセスが許可されていません");
-          }
-      } finally {
-          // ★処理が終わったら最後に必ず全選択状態にする
-          selectAllTextArea();
-      }
-    });
-
-
-    // 手動でのペースト（長押しからのペースト）もサポート
     pasteArea.addEventListener("paste", ()=>{
       setTimeout(async ()=>{
         let sourceText = pasteArea.value;
         if(sourceText && sourceText.trim()){
            await executeImport(sourceText);
-           selectAllTextArea(); // ペースト後も全選択
         }
       }, 100);
     });
+
+    btnApply.addEventListener("click", async ()=>{
+      let sourceText = pasteArea.value;
+      if(sourceText && sourceText.trim()){
+         await executeImport(sourceText);
+      } else {
+         showToast("貼り付けデータなし");
+      }
+    });
+
+    pasteArea.addEventListener("focus", ()=> pasteArea.select());
+    pasteArea.addEventListener("click", ()=> pasteArea.select());
 
     btnCopyTSV.addEventListener("click", async ()=>{
       const tsv = toTSV();
@@ -1273,6 +1212,7 @@
       showToast("全削除しました");
     });
 
+    // ★追加：完了分削除機能
     function isFullyCopied(r) {
       const hasId = r.id && r.id.trim() !== "";
       const hasPin = r.pin && r.pin.trim() !== "";
@@ -1324,8 +1264,6 @@
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
-    // 隠し処理のイベントリスナーは削除しました。
-
     function init(){
       const s = localStorage.getItem(STORAGE_KEY);
       if(s){
@@ -1338,11 +1276,9 @@
       const st = loadSettings();
       rngInputFont.value = String(st.inputFont);
       rngCopyFont.value  = String(st.copyFont);
-      isAutoPasteEnabled = st.autoPaste;
-      copyTabName.value = st.tabName;
+      copyTabName.value = st.tabName; // ★名前の復元
       
       applyFontSettings(st.inputFont, st.copyFont);
-      updateAutoPasteBtn();
 
       snapshot();
       renderAll();
