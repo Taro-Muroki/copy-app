@@ -105,12 +105,10 @@
       100% { transform: translateY(-50px) rotate(3deg); }
     }
 
-    /* ★余白を極限まで削る＆下部タブの高さ計算を修正 */
     .wrap{
       max-width: 980px;
       margin: 0 auto;
       padding: 4px 6px; 
-      /* ★タブバー(約56px) + 下の余白(safe-area)を引く。以前より大きく取れるはず */
       height: calc(100vh - 56px - env(safe-area-inset-bottom)); 
       display: flex;
       flex-direction: column;
@@ -186,7 +184,6 @@
     .fontRow input[type="range"]{ flex:1; accent-color: var(--colaRed); }
     .fontVal{ min-width: 40px; text-align:right; font-weight: 900; color: var(--colaBrown); font-size: 12px; }
 
-    /* ★カードの下マージンなどを削除して枠いっぱいにする */
     .card{
       background: var(--card);
       border: 1px solid white;
@@ -198,7 +195,7 @@
       flex-direction: column;
       flex: 1; 
       min-height: 0; 
-      margin-bottom: 0; /* ★重要：ここを0にする！ */
+      margin-bottom: 0; 
     }
     .card::after {
       content: "";
@@ -264,7 +261,6 @@
       font-size: 11px;
     }
 
-    /* ★表の角丸や下のマージンも調整 */
     .grid{
       width:100%;
       border: 1px solid var(--line);
@@ -275,7 +271,7 @@
       flex-direction: column;
       flex: 1; 
       min-height: 0;
-      margin-bottom: 0; /* ★ここも0に */
+      margin-bottom: 0; 
     }
     .gridHeader, .gridRow{
       display:grid;
@@ -298,7 +294,6 @@
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      /* ★余白をなくす */
       padding-bottom: 0; 
     }
 
@@ -418,13 +413,11 @@
       color: #b35f00;
     }
 
-    /* ★下部タブの無駄な余白を削減 */
     .tabs{
       position: fixed;
       left: 0; right: 0;
       bottom: 0;
       z-index: 40;
-      /* ★paddingを極力小さく */
       padding: 4px 10px calc(4px + env(safe-area-inset-bottom));
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
@@ -432,7 +425,7 @@
       border-radius: 16px 16px 0 0;
       border-top: 1px solid rgba(255,255,255,0.3);
       box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-      height: 48px; /* ★高さをさらに低く！(以前は64px) */
+      height: 48px; 
       box-sizing: content-box; 
     }
     .tabBar{
@@ -445,10 +438,10 @@
     .tabBtn{
       flex:1;
       border: 1px solid rgba(255,255,255,0.5);
-      border-radius: 12px; /* ★ボタンの角丸も少し小さく */
+      border-radius: 12px; 
       padding: 0; 
       font-weight: 950;
-      font-size: 15px; /* ★文字も少し小さく */
+      font-size: 15px; 
       cursor:pointer;
       background: rgba(255,255,255,0.8);
       color: var(--colaBrown);
@@ -532,7 +525,7 @@
         </div>
 
         <div class="paste-group">
-          <textarea id="pasteArea" class="pasteBox" placeholder="ここに「ID PIN」を複数行で貼り付け&#13;&#10;（ExcelからコピペOK）"></textarea>
+          <textarea id="pasteArea" class="pasteBox" placeholder="ここに「ID PIN」を複数行で貼り付け&#13;&#10;（ExcelやTSVコピーデータもOK）"></textarea>
           <div class="pasteActions">
             <button class="btn dark" id="btnApply">貼り付け</button>
             <button class="btn light" id="btnCopyTSV">TSVコピー</button>
@@ -1034,6 +1027,7 @@
       for(let i=0;i<lines.length;i++){
         const line = lines[i];
 
+        // パターンB（特殊なラベル表記）
         if(isAppIdLine(line) && (i+1) < lines.length && isPinLine(lines[i+1])){
           const idLabel = line.match(/^\s*AppID/i) ? "AppID" : "アプリID";
           const id = normalizeId(stripPrefix(line, idLabel));
@@ -1043,6 +1037,15 @@
           continue;
         }
 
+        // ★追加：パターンC（TSVデータ）
+        // タブ区切りで4要素あり、1番目と4番目が数字の場合
+        const tabParts = line.split('\t');
+        if (tabParts.length === 4 && /^\d+$/.test(tabParts[0].trim()) && /^\d+$/.test(tabParts[3].trim())) {
+          out.push({id: normalizeId(tabParts[1]), pin: normalizePin(tabParts[2])});
+          continue;
+        }
+
+        // パターンA（Excel等からの通常コピペ）
         const parts = line.split(/\s+/);
         if(parts.length === 1){
           out.push({id: normalizeId(parts[0]), pin:""});
