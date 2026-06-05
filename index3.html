@@ -614,7 +614,7 @@
 
     let rows = [];
     let isAutoPasteEnabled = true;
-    let lastAutoPastedText = ""; // ★前回自動ペーストした文字を記憶
+    let lastAutoPastedText = ""; 
 
     let history = [];
     let histIdx = -1;
@@ -820,7 +820,6 @@
        saveSettings(rngInputFont.value, rngCopyFont.value, isAutoPasteEnabled, copyTabName.value);
     });
 
-    // 自動コピペのトグル
     btnAutoPaste.addEventListener("click", () => {
       isAutoPasteEnabled = !isAutoPasteEnabled;
       updateAutoPasteBtn();
@@ -1172,7 +1171,7 @@
         let sourceText = pasteArea.value;
         if(sourceText && sourceText.trim()){
            await executeImport(sourceText);
-           lastAutoPastedText = sourceText; // ペースト時も記憶
+           lastAutoPastedText = sourceText; 
         }
       }, 100);
     });
@@ -1290,24 +1289,23 @@
         
         try {
             const text = await navigator.clipboard.readText();
-            // コピーされている文字が空ではなく、かつ「前回自動ペーストした文字」と違う場合のみ実行
             if (text && text.trim() && text !== lastAutoPastedText) {
-                // ルールに合うデータが含まれているかチェック
                 const pasted = parsePasted(text);
                 if (pasted.length > 0) {
                     const success = await executeImport(text, false);
                     if(success) {
-                       lastAutoPastedText = text; // 今回ペーストした文字を記憶
+                       lastAutoPastedText = text; 
                        showToast("クリップボードから自動反映しました");
                        pasteArea.value = text;
+                       // ★追加：ペーストされた直後に全選択状態にする
+                       pasteArea.focus();
+                       pasteArea.select();
                     }
                 }
             }
         } catch (err) {
-            // セキュリティで読み取れない場合などは何もしない（裏でエラーが出てもユーザーには見せない）
         }
     });
-
 
     function init(){
       const s = localStorage.getItem(STORAGE_KEY);
