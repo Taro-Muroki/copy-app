@@ -274,6 +274,13 @@
       border-color: var(--colaRed);
       box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
     }
+    
+    /* ★追加：全選択（ハイライト）時の色を少し目立たせる */
+    .pasteBox::selection {
+        background: rgba(228, 0, 43, 0.2); 
+    }
+
+
     .pasteActions{
       display:flex;
       flex-direction: column;
@@ -1166,6 +1173,19 @@
       return true;
     }
 
+    // ★入力エリアの「全選択（ハイライト）」を確実に実行する関数
+    function selectAllTextArea() {
+      // 少しタイミングをずらすことで、ブラウザ側の選択解除を防ぐ
+      setTimeout(() => {
+        pasteArea.focus();
+        pasteArea.select();
+      }, 50);
+    }
+
+    // タップ時（フォーカス時）は常に全選択
+    pasteArea.addEventListener("focus", selectAllTextArea);
+    pasteArea.addEventListener("click", selectAllTextArea);
+
     pasteArea.addEventListener("paste", ()=>{
       setTimeout(async ()=>{
         let sourceText = pasteArea.value;
@@ -1185,9 +1205,6 @@
          showToast("貼り付けデータなし");
       }
     });
-
-    pasteArea.addEventListener("focus", ()=> pasteArea.select());
-    pasteArea.addEventListener("click", ()=> pasteArea.select());
 
     btnCopyTSV.addEventListener("click", async ()=>{
       const tsv = toTSV();
@@ -1284,8 +1301,11 @@
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
     // ★魔法の自動ペースト機能（画面のどこかをタップした瞬間に発動）
-    document.addEventListener("click", async () => {
+    document.addEventListener("click", async (e) => {
         if (!isAutoPasteEnabled) return;
+
+        // タップした要素がテキストエリアそのものの場合は、全選択が優先されるようにスキップ
+        if (e.target === pasteArea) return;
         
         try {
             const text = await navigator.clipboard.readText();
@@ -1297,9 +1317,8 @@
                        lastAutoPastedText = text; 
                        showToast("クリップボードから自動反映しました");
                        pasteArea.value = text;
-                       // ★追加：ペーストされた直後に全選択状態にする
-                       pasteArea.focus();
-                       pasteArea.select();
+                       // ★反映後、確実にテキストエリアを全選択（ハイライト）状態にする
+                       selectAllTextArea();
                     }
                 }
             }
