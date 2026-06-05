@@ -51,16 +51,14 @@
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html,body{ height:100%; }
+    html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } /* ★スクロール全体を隠す */
     
     body{
-      margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background-color: var(--colaDark);
       color:var(--text);
       overscroll-behavior-y: contain;
       position: relative;
-      overflow-x: hidden;
 
       background-image: 
         radial-gradient(circle at 50% 40%, rgba(228, 0, 43, 0.2) 0%, transparent 60%),
@@ -107,84 +105,99 @@
       100% { transform: translateY(-50px) rotate(3deg); }
     }
 
+    /* ★余白を極限まで削る */
     .wrap{
       max-width: 980px;
       margin: 0 auto;
-      padding: 10px 10px 120px;
+      padding: 4px 6px; /* ★左右上下のパディングを極小化 */
+      height: calc(100vh - 64px - env(safe-area-inset-bottom)); /* ★タブバーの分だけ引く */
+      display: flex;
+      flex-direction: column;
+    }
+    @supports (height: 100dvh) {
+      .wrap{
+        height: calc(100dvh - 64px - env(safe-area-inset-bottom));
+      }
     }
 
+    /* ★上部バーのコンパクト化 */
     .topbar{
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: 10px;
+      padding: 4px 6px; /* ★パディング削減 */
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.3);
-      border-radius: 0 0 20px 20px;
-      margin: 0 -10px;
-      padding-left: 10px;
-      padding-right: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-radius: 0 0 16px 16px;
+      margin: 0 -6px 6px; /* ★マージン調整 */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      flex-shrink: 0; /* ★潰れないようにする */
     }
 
     .controls{
       display:flex;
-      gap:10px;
+      gap:6px; /* ★隙間を狭く */
       align-items:center;
-      flex-wrap:wrap;
-      padding: 6px 0 10px;
+      flex-wrap:nowrap; /* ★折り返しを防ぐ */
+      overflow-x: auto; /* ★入り切らない場合は横スクロール */
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
     }
+    .controls::-webkit-scrollbar { display: none; } /* Chrome, Safari */
 
     .btn{
       border:0;
-      padding: 10px 14px;
-      border-radius: 20px;
+      padding: 8px 12px; /* ★ボタンを少し小さく */
+      border-radius: 16px;
       font-weight: 800;
+      font-size: 13px; /* ★文字サイズを小さく */
       cursor:pointer;
       user-select:none;
       line-height: 1;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      gap:4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       transition: transform 0.1s, box-shadow 0.1s;
+      white-space: nowrap; /* ★テキストの折り返しを防ぐ */
     }
     .btn:active{ transform: translateY(2px); box-shadow: none; }
 
     .btn.dark{ background: var(--btnDark); color: var(--btnDarkText); border: 2px solid rgba(255,255,255,0.2); }
     .btn.light{ background: var(--btnLight); color: var(--colaBrown); border: 1px solid rgba(228, 0, 43, 0.1); }
     .btn.danger{ background: var(--dangerBg); color: var(--dangerText); border: 1px solid var(--dangerText); }
-    .btn.icon{ width: 44px; padding: 10px 0; font-weight: 900; }
+    .btn.icon{ width: 36px; padding: 8px 0; font-weight: 900; } /* ★アイコンボタンも小さく */
 
     .fontPanel{
-      margin-top: 8px;
-      padding: 12px 12px 10px;
-      border-radius: 18px;
+      margin-top: 4px;
+      padding: 8px;
+      border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.5);
       background: rgba(255,255,255,0.9);
-      box-shadow: 0 10px 30px rgba(50,10,10,0.15);
+      box-shadow: 0 4px 15px rgba(50,10,10,0.15);
       display:none;
     }
-    .fontRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding: 6px 0;
-    }
-    .fontRow label{ min-width: 92px; font-weight: 900; color: var(--colaBrown); font-size: 13px; }
+    .fontRow{ display:flex; align-items:center; gap:8px; padding: 4px 0; }
+    .fontRow label{ min-width: 70px; font-weight: 900; color: var(--colaBrown); font-size: 12px; }
     .fontRow input[type="range"]{ flex:1; accent-color: var(--colaRed); }
-    .fontVal{ min-width: 54px; text-align:right; font-weight: 900; color: var(--colaBrown); font-size: 13px; }
+    .fontVal{ min-width: 40px; text-align:right; font-weight: 900; color: var(--colaBrown); font-size: 12px; }
 
+    /* ★カードデザインの余白を極小化 */
     .card{
       background: var(--card);
       border: 1px solid white;
-      border-radius: 24px;
-      box-shadow: 0 12px 40px rgba(60, 10, 20, 0.2);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(60, 10, 20, 0.2);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1; /* ★画面の残り高さをすべて使う */
+      min-height: 0; /* ★Flexboxの子要素が縮むために必須 */
     }
     .card::after {
       content: "";
@@ -193,71 +206,47 @@
       background: linear-gradient(to right, transparent, white, transparent);
       opacity: 0.6;
     }
-    .section{ padding: 14px; margin-top: 10px; }
+    .section{ padding: 8px; margin-top: 0; } /* ★セクションのパディングとマージンを削減 */
 
-    /* ★ 入力タブ専用のスクロール制御レイアウト（画面スクロールをロックして表だけスクロール） */
-    .active-flex {
-      display: flex !important;
-      flex-direction: column;
-      /* スマホ・PC両方で画面内に収まるように高さを設定 */
-      height: calc(100vh - 190px - env(safe-area-inset-bottom));
-    }
-    @supports (height: 100dvh) {
-      .active-flex {
-        height: calc(100dvh - 190px - env(safe-area-inset-bottom));
-      }
-    }
-    .input-fixed-area { flex-shrink: 0; }
-    .active-flex #gridInput {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0; /* これがないと縮まない */
-    }
-    .active-flex .gridHeader { flex-shrink: 0; }
-    /* ★表の中身だけスクロールさせる */
-    .active-flex #rowsInput {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 20px;
-    }
-
+    /* ★ヘッダーの隙間を削減 */
     .headerRow{
       display:flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 6px;
+      margin-bottom: 4px;
     }
     .hTitle{
-      font-size: 20px;
+      font-size: 16px; /* ★見出しを小さく */
       font-weight: 900;
       letter-spacing: .2px;
       color: var(--colaRed);
-      text-shadow: 0 2px 0 rgba(255,255,255,1);
+      text-shadow: 0 1px 0 rgba(255,255,255,1);
+      margin: 0;
     }
-    .count{ font-size: 14px; color: var(--muted); font-weight: 800; }
+    .count{ font-size: 12px; color: var(--muted); font-weight: 800; }
 
-    /* ★ スペース節約：テキストエリアとボタンを横並びに配置 */
+    /* ★ スペース節約：テキストエリアとボタンを極限まで小さく横並びに配置 */
     .paste-group {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      margin-top: 4px;
+      gap: 6px;
+      margin-bottom: 6px;
     }
     .pasteBox{
       flex: 1;
       border: 2px solid var(--line);
-      border-radius: 12px;
-      padding: 10px;
-      font-size: 13px;
-      line-height: 1.35;
-      min-height: 76px;
+      border-radius: 8px;
+      padding: 6px;
+      font-size: 12px;
+      line-height: 1.2;
+      height: 54px; /* ★高さをさらに削る (約2〜3行分) */
       resize: none;
       outline: none;
       background: #fff;
       color: var(--colaBrown);
+    }
+    .pasteBox::placeholder {
+        color: #aaa; /* プレースホルダーの色を少し薄く */
     }
     .pasteBox:focus{
       border-color: var(--colaRed);
@@ -266,29 +255,33 @@
     .pasteActions{
       display:flex;
       flex-direction: column;
-      gap: 6px;
-      width: 104px; /* ボタンの横幅を固定 */
+      gap: 4px;
+      width: 90px; /* ★ボタン幅を縮小 */
     }
     .pasteActions .btn{
       flex: 1;
       padding: 0;
-      border-radius: 12px;
-      font-size: 13px;
+      border-radius: 8px;
+      font-size: 11px;
     }
 
     .grid{
       width:100%;
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 12px;
       overflow:hidden;
       background: #fff;
+      display: flex;
+      flex-direction: column;
+      flex: 1; /* ★表を可能な限り広げる */
+      min-height: 0;
     }
     .gridHeader, .gridRow{
       display:grid;
       grid-template-columns: var(--colNum) 1fr 0.78fr;
       align-items:center;
-      column-gap: 10px;
-      padding: 12px 12px;
+      column-gap: 6px;
+      padding: 6px 8px; /* ★行の高さを抑える */
     }
     .gridHeader{
       background: #fbf0f0;
@@ -296,7 +289,18 @@
       font-weight: 900;
       color: var(--colaBrown);
       letter-spacing: .2px;
+      font-size: 12px; /* ★ヘッダー文字を小さく */
+      flex-shrink: 0;
     }
+
+    /* ★表の中身のスクロール設定 */
+    #rowsInput, #rowsCopy {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      /* padding-bottom: 10px; */ /* 下部の余白を削除 */
+    }
+
     .gridRow{
       border-bottom: 1px solid var(--line);
       position: relative;
@@ -306,7 +310,7 @@
 
     .numCell{
       position: relative;
-      height: 44px;
+      height: 36px; /* ★行の高さを低くする */
       display:flex;
       align-items:center;
       justify-content:center;
@@ -320,19 +324,19 @@
       align-items:center;
       justify-content:center;
       font-weight: 1000;
-      font-size: 28px;
+      font-size: 22px; /* ★ゴースト数字も小さく */
       letter-spacing: -1px;
       opacity: 1;
       pointer-events:none;
       transform: translateY(1px);
     }
-    .numFront{ position:relative; z-index:2; font-size: 13px; opacity: .9; }
+    .numFront{ position:relative; z-index:2; font-size: 12px; opacity: .9; }
 
     .cellWrap{
       position: relative;
       display:flex;
       align-items:center;
-      gap: 8px;
+      gap: 4px;
       min-width: 0;
     }
     .cellInput{
@@ -340,13 +344,13 @@
       border: 1px solid transparent;
       background: transparent;
       outline:none;
-      padding: 10px 44px 10px 10px;
-      border-radius: 14px;
+      padding: 6px 36px 6px 6px; /* ★入力枠のパディングを削る */
+      border-radius: 8px;
       font-weight: 900;
       letter-spacing: .2px;
       min-width: 0;
       color: var(--text);
-      font-size: 16px;
+      font-size: 14px;
     }
     .cellInput:focus{
       background: #fff5f5;
@@ -369,25 +373,25 @@
 
     .copyMini{
       position:absolute;
-      right: 6px;
+      right: 4px;
       top: 50%;
       transform: translateY(-50%);
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
+      width: 28px; /* ★コピーボタンを小さく */
+      height: 28px;
+      border-radius: 8px;
       border: 1px solid #e6caca;
       background: #fff;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 18px;
+      font-size: 14px; /* ★アイコンを小さく */
       cursor:pointer;
       user-select:none;
     }
 
     .tapCell{
-      padding: 10px 10px;
-      border-radius: 14px;
+      padding: 6px 8px; /* ★タップ領域の高さを削る */
+      border-radius: 8px;
       font-weight: 900;
       letter-spacing: .2px;
       user-select: none;
@@ -413,42 +417,49 @@
       color: #b35f00;
     }
 
+    /* ★下部タブのコンパクト化 */
     .tabs{
       position: fixed;
       left: 0; right: 0;
       bottom: 0;
       z-index: 40;
-      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-radius: 20px 20px 0 0;
+      border-radius: 16px 16px 0 0;
       border-top: 1px solid rgba(255,255,255,0.3);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+      height: 64px; /* ★高さを固定 */
+      box-sizing: content-box; /* paddingを含めない高さ */
     }
     .tabBar{
       max-width: 980px;
       margin: 0 auto;
       display:flex;
-      gap: 12px;
+      gap: 10px;
+      height: 100%;
     }
     .tabBtn{
       flex:1;
       border: 1px solid rgba(255,255,255,0.5);
-      border-radius: 20px;
-      padding: 16px 0;
+      border-radius: 16px;
+      padding: 0; /* ★パディングを消してFlexboxで中央寄せ */
       font-weight: 950;
-      font-size: 18px;
+      font-size: 16px;
       cursor:pointer;
       background: rgba(255,255,255,0.8);
       color: var(--colaBrown);
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .tabBtn.active{
       background: var(--colaRed);
       color: #fff;
       border-color: transparent;
-      box-shadow: 0 4px 12px rgba(228,0,43,0.3);
+      box-shadow: 0 4px 10px rgba(228,0,43,0.3);
       transform: translateY(-2px);
     }
 
@@ -456,13 +467,13 @@
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(96px + env(safe-area-inset-bottom));
+      bottom: calc(80px + env(safe-area-inset-bottom));
       background: var(--colaDark);
       color:#fff;
-      padding: 10px 18px;
-      border-radius: 24px;
+      padding: 8px 16px;
+      border-radius: 20px;
       font-weight: 900;
-      font-size: 14px;
+      font-size: 13px;
       opacity: 0;
       pointer-events:none;
       transition: opacity .18s ease;
@@ -471,6 +482,17 @@
       border: 1px solid rgba(255,255,255,0.2);
     }
     .toast.show{ opacity: 1; }
+
+    /* ★入力エリア固定のためのレイアウト設定（入力タブ・コピータブ共通） */
+    .view-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+    }
+    .fixed-header-area {
+        flex-shrink: 0;
+    }
   </style>
 </head>
 
@@ -482,11 +504,8 @@
         <button class="btn dark" id="btnSave">保存</button>
         <button class="btn light" id="btnLoad">読込</button>
         <button class="btn danger" id="btnClear">全削除</button>
-
-        <button class="btn light" id="btnFont">文字サイズ</button>
-
-        <div style="flex:1"></div>
-
+        <button class="btn light" id="btnFont">文字</button>
+        <div style="flex:1; min-width: 0;"></div>
         <button class="btn icon light" id="btnBack" title="戻る">←</button>
         <button class="btn icon light" id="btnFwd" title="進む">→</button>
       </div>
@@ -505,24 +524,23 @@
       </div>
     </div>
 
-    <div id="viewInput" class="card section view-input" style="display:none;">
-      <div class="input-fixed-area">
-        <div class="headerRow">
+    <div id="viewInput" class="card section view-input view-container" style="display:none;">
+      <div class="fixed-header-area">
+        <div class="headerRow" style="margin-bottom: 2px;">
           <div class="hTitle">入力</div>
-          <div class="count">件数：<span id="countInput">0</span></div>
         </div>
 
         <div class="paste-group">
-          <textarea id="pasteArea" class="pasteBox" placeholder="ここに「ID PIN」を複数行で貼り付け&#13;&#10;（ExcelからそのままコピペOK）"></textarea>
+          <textarea id="pasteArea" class="pasteBox" placeholder="ここに「ID PIN」を複数行で貼り付け&#13;&#10;（ExcelからコピペOK）"></textarea>
           <div class="pasteActions">
-            <button class="btn dark" id="btnApply">貼り付け反映</button>
+            <button class="btn dark" id="btnApply">貼り付け</button>
             <button class="btn light" id="btnCopyTSV">TSVコピー</button>
           </div>
         </div>
 
-        <div class="headerRow" style="margin-bottom:8px;">
-          <div class="hTitle" style="font-size:16px;">ID / PIN</div>
-          <div class="count">件数：<span id="countTableInput">0</span></div>
+        <div class="headerRow" style="margin-bottom:4px; align-items: center;">
+          <div class="hTitle" style="font-size:14px;">ID / PIN</div>
+          <div class="count">件数：<span id="countInput">0</span></div>
         </div>
       </div>
 
@@ -536,18 +554,18 @@
       </div>
     </div>
 
-    <div id="viewCopy" class="card section view-copy" style="display:none;">
-      <div class="headerRow" style="align-items: center;">
-        <div class="hTitle">コピー</div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div class="count">件数：<span id="countCopy">0</span></div>
-          <button class="btn danger" id="btnDeleteCopied" style="font-size: 13px; padding: 6px 12px; border-radius:12px;">完了分を削除</button>
-        </div>
-      </div>
-
-      <div style="color: var(--muted); font-size: 13px; line-height: 1.35; margin: 4px 0 12px; font-weight: 500;">
-        セルをタップすると、そのセルの文字だけコピーします。<br/>
-        1回目コピーで色がつき、2回目コピーで色が戻ります。
+    <div id="viewCopy" class="card section view-copy view-container" style="display:none;">
+      <div class="fixed-header-area">
+          <div class="headerRow" style="align-items: center; margin-bottom: 8px;">
+            <div class="hTitle">コピー</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="count"><span id="countCopy">0</span>件</div>
+              <button class="btn danger" id="btnDeleteCopied" style="font-size: 11px; padding: 4px 8px; border-radius:8px;">完了分削除</button>
+            </div>
+          </div>
+          <div style="color: var(--muted); font-size: 11px; line-height: 1.2; margin-bottom: 8px; font-weight: 500;">
+            セルタップでコピー。もう一度で色を戻します。
+          </div>
       </div>
 
       <div class="grid" id="gridCopy">
@@ -601,7 +619,6 @@
 
     const countInput = document.getElementById("countInput");
     const countCopy  = document.getElementById("countCopy");
-    const countTableInput = document.getElementById("countTableInput");
 
     const toast = document.getElementById("toast");
 
@@ -772,9 +789,9 @@
     function renderAll(){
       renderInputTable();
       renderCopyTable();
-      countInput.textContent = String(nonEmptyCount());
-      countTableInput.textContent = String(nonEmptyCount());
-      countCopy.textContent = String(nonEmptyCount());
+      const c = String(nonEmptyCount());
+      countInput.textContent = c;
+      countCopy.textContent = c;
     }
 
     function renderInputTable(){
@@ -869,7 +886,6 @@
             snapshot();
             renderCopyTable();
             countInput.textContent = String(nonEmptyCount());
-            countTableInput.textContent = String(nonEmptyCount());
             countCopy.textContent = String(nonEmptyCount());
           }
         });
@@ -883,7 +899,6 @@
           snapshot();
           renderCopyTable();
           countInput.textContent = String(nonEmptyCount());
-          countTableInput.textContent = String(nonEmptyCount());
           countCopy.textContent = String(nonEmptyCount());
         });
 
@@ -1156,7 +1171,6 @@
       showToast("全削除しました");
     });
 
-    // ★ 完了データ（両方コピー済み）の一括削除機能
     function isFullyCopied(r) {
       const hasId = r.id && r.id.trim() !== "";
       const hasPin = r.pin && r.pin.trim() !== "";
@@ -1192,14 +1206,12 @@
     btnBack.addEventListener("click", ()=> restoreFromHistory(histIdx - 1));
     btnFwd.addEventListener("click",  ()=> restoreFromHistory(histIdx + 1));
 
-    // ★ 入力タブのときだけ画面固定（active-flex）を有効化
     function setTab(which){
       const isInput = (which === "input");
       if(isInput) {
-        viewInput.classList.add("active-flex");
+        viewInput.style.display = "";
         viewCopy.style.display  = "none";
       } else {
-        viewInput.classList.remove("active-flex");
         viewInput.style.display = "none";
         viewCopy.style.display  = "";
       }
