@@ -50,7 +50,6 @@
       --fizzColorSoft: rgba(255, 230, 180, 0.4);
     }
 
-    /* ★修正：touch-action: manipulation を追加し、ボタン連打時のズームをさらに防止 */
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action: manipulation; }
     html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } 
     
@@ -228,7 +227,6 @@
       white-space: nowrap;
     }
     
-    /* コピータブの名前入力用 */
     .titleInput {
       font-size: 16px;
       font-weight: 900;
@@ -276,7 +274,6 @@
       box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
     }
     
-    /* 全選択（ハイライト）時の色を少し目立たせる */
     .pasteBox::selection {
         background: rgba(228, 0, 43, 0.2); 
     }
@@ -621,7 +618,6 @@
 
     let rows = [];
     let isAutoPasteEnabled = true;
-    let lastAutoPastedText = ""; 
 
     let history = [];
     let histIdx = -1;
@@ -1173,58 +1169,65 @@
       return true;
     }
 
-    // ★修正：テキストエリアをタップ・フォーカスした時に、クリップボードからの反映と全選択を同時に行う
-    async function handlePasteAreaInteraction() {
-        if (isAutoPasteEnabled) {
-            try {
-                const text = await navigator.clipboard.readText();
-                if (text && text.trim()) {
-                    // 最新のクリップボードを常に枠内に入れる
-                    pasteArea.value = text;
-                    
-                    if (text !== lastAutoPastedText) {
-                        const pasted = parsePasted(text);
-                        if (pasted.length > 0) {
-                            const success = await executeImport(text, false);
-                            if(success) {
-                               lastAutoPastedText = text; 
-                               showToast("自動反映しました");
-                            }
-                        }
-                    }
-                }
-            } catch (err) {}
-        }
-        
-        // ★自動コピペのON/OFFに関わらず、確実に全選択（ハイライト）状態にする
-        setTimeout(() => {
-            pasteArea.focus();
-            pasteArea.select();
-        }, 50);
+    // ★テキストエリアのタップ・フォーカス時は「確実に全選択だけ」を行う
+    function selectAllTextArea() {
+      setTimeout(() => {
+        pasteArea.focus();
+        pasteArea.select();
+      }, 50);
     }
+    pasteArea.addEventListener("click", selectAllTextArea);
+    pasteArea.addEventListener("focus", selectAllTextArea);
 
-    // 以前の隠し処理（document.addEventListener）は削除し、テキストエリア本体のタップに魔法をかける
-    pasteArea.addEventListener("click", handlePasteAreaInteraction);
-    pasteArea.addEventListener("focus", handlePasteAreaInteraction);
 
+    // ★「貼り付け」ボタンを押した時に、クリップボードからの反映と全選択を行う
+    btnApply.addEventListener("click", async ()=>{
+      if (!isAutoPasteEnabled) {
+         // OFFの時は手動で入力された文字だけで処理する
+         let sourceText = pasteArea.value;
+         if(sourceText && sourceText.trim()){
+            await executeImport(sourceText);
+         } else {
+            showToast("貼り付けデータなし");
+         }
+         return;
+      }
+
+      // ONの時はクリップボードを読みに行く
+      try {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim()) {
+              // クリップボードの文字をテキストエリアに表示
+              pasteArea.value = text;
+              // リストへ反映
+              await executeImport(text);
+          } else {
+             showToast("コピーされたデータがありません");
+          }
+      } catch (err) {
+          // 権限がない場合などは、手動で入力された文字で処理を試みる
+          let sourceText = pasteArea.value;
+          if(sourceText && sourceText.trim()){
+             await executeImport(sourceText);
+          } else {
+             showToast("クリップボードへのアクセスが許可されていません");
+          }
+      } finally {
+          // ★処理が終わったら最後に必ず全選択状態にする
+          selectAllTextArea();
+      }
+    });
+
+
+    // 手動でのペースト（長押しからのペースト）もサポート
     pasteArea.addEventListener("paste", ()=>{
       setTimeout(async ()=>{
         let sourceText = pasteArea.value;
         if(sourceText && sourceText.trim()){
            await executeImport(sourceText);
-           lastAutoPastedText = sourceText; 
+           selectAllTextArea(); // ペースト後も全選択
         }
       }, 100);
-    });
-
-    btnApply.addEventListener("click", async ()=>{
-      let sourceText = pasteArea.value;
-      if(sourceText && sourceText.trim()){
-         await executeImport(sourceText);
-         lastAutoPastedText = sourceText;
-      } else {
-         showToast("貼り付けデータなし");
-      }
     });
 
     btnCopyTSV.addEventListener("click", async ()=>{
@@ -1320,6 +1323,8 @@
     
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
+
+    // 隠し処理のイベントリスナーは削除しました。
 
     function init(){
       const s = localStorage.getItem(STORAGE_KEY);
