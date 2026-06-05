@@ -51,7 +51,7 @@
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } /* ★スクロール全体を隠す */
+    html,body{ height:100%; margin: 0; padding: 0; overflow: hidden; } 
     
     body{
       font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Noto Sans JP",system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
@@ -105,55 +105,55 @@
       100% { transform: translateY(-50px) rotate(3deg); }
     }
 
-    /* ★余白を極限まで削る */
+    /* ★余白を極限まで削る＆下部タブの高さ計算を修正 */
     .wrap{
       max-width: 980px;
       margin: 0 auto;
-      padding: 4px 6px; /* ★左右上下のパディングを極小化 */
-      height: calc(100vh - 64px - env(safe-area-inset-bottom)); /* ★タブバーの分だけ引く */
+      padding: 4px 6px; 
+      /* ★タブバー(約56px) + 下の余白(safe-area)を引く。以前より大きく取れるはず */
+      height: calc(100vh - 56px - env(safe-area-inset-bottom)); 
       display: flex;
       flex-direction: column;
     }
     @supports (height: 100dvh) {
       .wrap{
-        height: calc(100dvh - 64px - env(safe-area-inset-bottom));
+        height: calc(100dvh - 56px - env(safe-area-inset-bottom));
       }
     }
 
-    /* ★上部バーのコンパクト化 */
     .topbar{
       position: sticky;
       top: 0;
       z-index: 30;
-      padding: 4px 6px; /* ★パディング削減 */
+      padding: 4px 6px; 
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.3);
       border-radius: 0 0 16px 16px;
-      margin: 0 -6px 6px; /* ★マージン調整 */
+      margin: 0 -6px 6px; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      flex-shrink: 0; /* ★潰れないようにする */
+      flex-shrink: 0; 
     }
 
     .controls{
       display:flex;
-      gap:6px; /* ★隙間を狭く */
+      gap:6px; 
       align-items:center;
-      flex-wrap:nowrap; /* ★折り返しを防ぐ */
-      overflow-x: auto; /* ★入り切らない場合は横スクロール */
+      flex-wrap:nowrap; 
+      overflow-x: auto; 
       padding-bottom: 2px;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; /* Firefox */
+      scrollbar-width: none; 
     }
-    .controls::-webkit-scrollbar { display: none; } /* Chrome, Safari */
+    .controls::-webkit-scrollbar { display: none; } 
 
     .btn{
       border:0;
-      padding: 8px 12px; /* ★ボタンを少し小さく */
+      padding: 8px 12px; 
       border-radius: 16px;
       font-weight: 800;
-      font-size: 13px; /* ★文字サイズを小さく */
+      font-size: 13px; 
       cursor:pointer;
       user-select:none;
       line-height: 1;
@@ -163,14 +163,14 @@
       gap:4px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       transition: transform 0.1s, box-shadow 0.1s;
-      white-space: nowrap; /* ★テキストの折り返しを防ぐ */
+      white-space: nowrap; 
     }
     .btn:active{ transform: translateY(2px); box-shadow: none; }
 
     .btn.dark{ background: var(--btnDark); color: var(--btnDarkText); border: 2px solid rgba(255,255,255,0.2); }
     .btn.light{ background: var(--btnLight); color: var(--colaBrown); border: 1px solid rgba(228, 0, 43, 0.1); }
     .btn.danger{ background: var(--dangerBg); color: var(--dangerText); border: 1px solid var(--dangerText); }
-    .btn.icon{ width: 36px; padding: 8px 0; font-weight: 900; } /* ★アイコンボタンも小さく */
+    .btn.icon{ width: 36px; padding: 8px 0; font-weight: 900; } 
 
     .fontPanel{
       margin-top: 4px;
@@ -186,7 +186,7 @@
     .fontRow input[type="range"]{ flex:1; accent-color: var(--colaRed); }
     .fontVal{ min-width: 40px; text-align:right; font-weight: 900; color: var(--colaBrown); font-size: 12px; }
 
-    /* ★カードデザインの余白を極小化 */
+    /* ★カードの下マージンなどを削除して枠いっぱいにする */
     .card{
       background: var(--card);
       border: 1px solid white;
@@ -196,8 +196,9 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      flex: 1; /* ★画面の残り高さをすべて使う */
-      min-height: 0; /* ★Flexboxの子要素が縮むために必須 */
+      flex: 1; 
+      min-height: 0; 
+      margin-bottom: 0; /* ★重要：ここを0にする！ */
     }
     .card::after {
       content: "";
@@ -206,9 +207,8 @@
       background: linear-gradient(to right, transparent, white, transparent);
       opacity: 0.6;
     }
-    .section{ padding: 8px; margin-top: 0; } /* ★セクションのパディングとマージンを削減 */
+    .section{ padding: 8px; margin-top: 0; } 
 
-    /* ★ヘッダーの隙間を削減 */
     .headerRow{
       display:flex;
       align-items: baseline;
@@ -217,7 +217,7 @@
       margin-bottom: 4px;
     }
     .hTitle{
-      font-size: 16px; /* ★見出しを小さく */
+      font-size: 16px; 
       font-weight: 900;
       letter-spacing: .2px;
       color: var(--colaRed);
@@ -226,7 +226,6 @@
     }
     .count{ font-size: 12px; color: var(--muted); font-weight: 800; }
 
-    /* ★ スペース節約：テキストエリアとボタンを極限まで小さく横並びに配置 */
     .paste-group {
       display: flex;
       gap: 6px;
@@ -239,14 +238,14 @@
       padding: 6px;
       font-size: 12px;
       line-height: 1.2;
-      height: 54px; /* ★高さをさらに削る (約2〜3行分) */
+      height: 54px; 
       resize: none;
       outline: none;
       background: #fff;
       color: var(--colaBrown);
     }
     .pasteBox::placeholder {
-        color: #aaa; /* プレースホルダーの色を少し薄く */
+        color: #aaa; 
     }
     .pasteBox:focus{
       border-color: var(--colaRed);
@@ -256,7 +255,7 @@
       display:flex;
       flex-direction: column;
       gap: 4px;
-      width: 90px; /* ★ボタン幅を縮小 */
+      width: 90px; 
     }
     .pasteActions .btn{
       flex: 1;
@@ -265,6 +264,7 @@
       font-size: 11px;
     }
 
+    /* ★表の角丸や下のマージンも調整 */
     .grid{
       width:100%;
       border: 1px solid var(--line);
@@ -273,15 +273,16 @@
       background: #fff;
       display: flex;
       flex-direction: column;
-      flex: 1; /* ★表を可能な限り広げる */
+      flex: 1; 
       min-height: 0;
+      margin-bottom: 0; /* ★ここも0に */
     }
     .gridHeader, .gridRow{
       display:grid;
       grid-template-columns: var(--colNum) 1fr 0.78fr;
       align-items:center;
       column-gap: 6px;
-      padding: 6px 8px; /* ★行の高さを抑える */
+      padding: 6px 8px; 
     }
     .gridHeader{
       background: #fbf0f0;
@@ -289,16 +290,16 @@
       font-weight: 900;
       color: var(--colaBrown);
       letter-spacing: .2px;
-      font-size: 12px; /* ★ヘッダー文字を小さく */
+      font-size: 12px; 
       flex-shrink: 0;
     }
 
-    /* ★表の中身のスクロール設定 */
     #rowsInput, #rowsCopy {
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      /* padding-bottom: 10px; */ /* 下部の余白を削除 */
+      /* ★余白をなくす */
+      padding-bottom: 0; 
     }
 
     .gridRow{
@@ -310,7 +311,7 @@
 
     .numCell{
       position: relative;
-      height: 36px; /* ★行の高さを低くする */
+      height: 36px; 
       display:flex;
       align-items:center;
       justify-content:center;
@@ -324,7 +325,7 @@
       align-items:center;
       justify-content:center;
       font-weight: 1000;
-      font-size: 22px; /* ★ゴースト数字も小さく */
+      font-size: 22px; 
       letter-spacing: -1px;
       opacity: 1;
       pointer-events:none;
@@ -344,7 +345,7 @@
       border: 1px solid transparent;
       background: transparent;
       outline:none;
-      padding: 6px 36px 6px 6px; /* ★入力枠のパディングを削る */
+      padding: 6px 36px 6px 6px; 
       border-radius: 8px;
       font-weight: 900;
       letter-spacing: .2px;
@@ -376,7 +377,7 @@
       right: 4px;
       top: 50%;
       transform: translateY(-50%);
-      width: 28px; /* ★コピーボタンを小さく */
+      width: 28px; 
       height: 28px;
       border-radius: 8px;
       border: 1px solid #e6caca;
@@ -384,13 +385,13 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 14px; /* ★アイコンを小さく */
+      font-size: 14px; 
       cursor:pointer;
       user-select:none;
     }
 
     .tapCell{
-      padding: 6px 8px; /* ★タップ領域の高さを削る */
+      padding: 6px 8px; 
       border-radius: 8px;
       font-weight: 900;
       letter-spacing: .2px;
@@ -417,21 +418,22 @@
       color: #b35f00;
     }
 
-    /* ★下部タブのコンパクト化 */
+    /* ★下部タブの無駄な余白を削減 */
     .tabs{
       position: fixed;
       left: 0; right: 0;
       bottom: 0;
       z-index: 40;
-      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      /* ★paddingを極力小さく */
+      padding: 4px 10px calc(4px + env(safe-area-inset-bottom));
       background: rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 16px 16px 0 0;
       border-top: 1px solid rgba(255,255,255,0.3);
       box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-      height: 64px; /* ★高さを固定 */
-      box-sizing: content-box; /* paddingを含めない高さ */
+      height: 48px; /* ★高さをさらに低く！(以前は64px) */
+      box-sizing: content-box; 
     }
     .tabBar{
       max-width: 980px;
@@ -443,10 +445,10 @@
     .tabBtn{
       flex:1;
       border: 1px solid rgba(255,255,255,0.5);
-      border-radius: 16px;
-      padding: 0; /* ★パディングを消してFlexboxで中央寄せ */
+      border-radius: 12px; /* ★ボタンの角丸も少し小さく */
+      padding: 0; 
       font-weight: 950;
-      font-size: 16px;
+      font-size: 15px; /* ★文字も少し小さく */
       cursor:pointer;
       background: rgba(255,255,255,0.8);
       color: var(--colaBrown);
@@ -467,7 +469,7 @@
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(80px + env(safe-area-inset-bottom));
+      bottom: calc(70px + env(safe-area-inset-bottom));
       background: var(--colaDark);
       color:#fff;
       padding: 8px 16px;
@@ -483,7 +485,6 @@
     }
     .toast.show{ opacity: 1; }
 
-    /* ★入力エリア固定のためのレイアウト設定（入力タブ・コピータブ共通） */
     .view-container {
         display: flex;
         flex-direction: column;
