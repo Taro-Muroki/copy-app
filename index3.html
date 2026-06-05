@@ -174,7 +174,6 @@
     .btn.toggle-on { background: var(--colaRed); color: white; border: 2px solid rgba(255,255,255,0.2); }
     .btn.toggle-off { background: #0056b3; color: white; border: 2px solid rgba(255,255,255,0.2); }
 
-
     .fontPanel{
       margin-top: 4px;
       padding: 8px;
@@ -250,7 +249,6 @@
       font-weight: 500;
     }
 
-
     .count{ font-size: 12px; color: var(--muted); font-weight: 800; white-space: nowrap;}
 
     .paste-group {
@@ -271,9 +269,7 @@
       background: #fff;
       color: var(--colaBrown);
     }
-    .pasteBox::placeholder {
-        color: #aaa; 
-    }
+    .pasteBox::placeholder { color: #aaa; }
     .pasteBox:focus{
       border-color: var(--colaRed);
       box-shadow: 0 0 0 4px rgba(228, 0, 43, 0.15);
@@ -508,15 +504,8 @@
     }
     .toast.show{ opacity: 1; }
 
-    .view-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-    }
-    .fixed-header-area {
-        flex-shrink: 0;
-    }
+    .view-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+    .fixed-header-area { flex-shrink: 0; }
   </style>
 </head>
 
@@ -625,6 +614,7 @@
 
     let rows = [];
     let isAutoPasteEnabled = true;
+    let lastAutoPastedText = ""; // ★前回自動ペーストした文字を記憶
 
     let history = [];
     let histIdx = -1;
@@ -848,7 +838,6 @@
         btnAutoPaste.classList.add("toggle-off");
       }
     }
-
 
     function renderAll(){
       renderInputTable();
@@ -1183,6 +1172,7 @@
         let sourceText = pasteArea.value;
         if(sourceText && sourceText.trim()){
            await executeImport(sourceText);
+           lastAutoPastedText = sourceText; // ペースト時も記憶
         }
       }, 100);
     });
@@ -1191,6 +1181,7 @@
       let sourceText = pasteArea.value;
       if(sourceText && sourceText.trim()){
          await executeImport(sourceText);
+         lastAutoPastedText = sourceText;
       } else {
          showToast("貼り付けデータなし");
       }
@@ -1293,26 +1284,29 @@
     tabInput.addEventListener("click", ()=> setTab("input"));
     tabCopy.addEventListener("click",  ()=> setTab("copy"));
 
-    // 自動でクリップボードを読み取ってペーストする処理
-    async function tryAutoPaste() {
+    // ★魔法の自動ペースト機能（画面のどこかをタップした瞬間に発動）
+    document.addEventListener("click", async () => {
         if (!isAutoPasteEnabled) return;
         
         try {
             const text = await navigator.clipboard.readText();
-            if (text && text.trim()) {
-                // 成功したらメッセージは出さず、エラー時も無視する
-                const success = await executeImport(text, false);
-                if(success) {
-                   showToast("クリップボードから自動反映しました");
-                   // 反映後、テキストエリアにも表示しておく
-                   pasteArea.value = text;
+            // コピーされている文字が空ではなく、かつ「前回自動ペーストした文字」と違う場合のみ実行
+            if (text && text.trim() && text !== lastAutoPastedText) {
+                // ルールに合うデータが含まれているかチェック
+                const pasted = parsePasted(text);
+                if (pasted.length > 0) {
+                    const success = await executeImport(text, false);
+                    if(success) {
+                       lastAutoPastedText = text; // 今回ペーストした文字を記憶
+                       showToast("クリップボードから自動反映しました");
+                       pasteArea.value = text;
+                    }
                 }
             }
         } catch (err) {
-            // クリップボードの権限がない場合などは何もしない
-            console.log("自動ペーストに失敗しました:", err);
+            // セキュリティで読み取れない場合などは何もしない（裏でエラーが出てもユーザーには見せない）
         }
-    }
+    });
 
 
     function init(){
@@ -1336,9 +1330,6 @@
       snapshot();
       renderAll();
       setTab("input");
-      
-      // アプリ起動時に自動ペーストを試行
-      setTimeout(tryAutoPaste, 500);
     }
     init();
   </script>
