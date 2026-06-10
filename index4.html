@@ -31,9 +31,6 @@
       --flash: #d8f4ff;
       --flashOutline: #5aceff;
 
-      /* #列 背景数字の濃さ */
-      --ghostBaseAlpha: 0.15;
-
       /* 文字サイズ */
       --uiInputFont: 11.5px;
       --uiCopyFont:  15px;
@@ -109,7 +106,6 @@
       max-width: 980px;
       margin: 0 auto;
       padding: 4px 6px; 
-      /* ★変更：下部のタブ領域（48px）をなくしたため、高さを画面いっぱいに広げる */
       height: calc(100vh - env(safe-area-inset-bottom)); 
       display: flex;
       flex-direction: column;
@@ -168,17 +164,6 @@
 
     .btn.dark{ background: var(--btnDark); color: var(--btnDarkText); border: 2px solid rgba(255,255,255,0.2); }
     .btn.light{ background: var(--btnLight); color: var(--colaBrown); border: 1px solid rgba(228, 0, 43, 0.1); }
-    
-    /* ★変更：完了分削除ボタンを赤文字・背景透明に近づける（画像参照） */
-    .btn.danger-text{ 
-      background: transparent; 
-      color: var(--dangerText); 
-      border: 0;
-      font-size: 14px;
-      padding: 4px 8px;
-      box-shadow: none;
-    }
-    .btn.danger-text:active{ background: rgba(228,0,43,0.1); }
     .btn.danger{ background: var(--dangerBg); color: var(--dangerText); border: 1px solid var(--dangerText); }
     .btn.icon{ width: 36px; padding: 8px 0; font-weight: 900; } 
 
@@ -207,7 +192,7 @@
       flex-direction: column;
       flex: 1; 
       min-height: 0; 
-      margin-bottom: 6px; /* ★変更：下部の余白を少し確保 */
+      margin-bottom: 6px; 
     }
     .card::after {
       content: "";
@@ -236,16 +221,15 @@
     }
     .count{ font-size: 12px; color: var(--muted); font-weight: 800; white-space: nowrap; }
 
-    /* ★変更：名前入力用テキストボックスを黒文字に */
     .titleInput {
       font-size: 16px;
       font-weight: 900;
-      color: var(--colaDark); /* 黒文字 */
+      color: var(--colaDark); 
       background: transparent;
       border: 1px dashed transparent;
       border-radius: 4px;
       padding: 2px 4px;
-      width: 150px; /* 少し広めに */
+      width: 150px; 
       outline: none;
       transition: border-color 0.2s;
     }
@@ -323,7 +307,7 @@
       flex-shrink: 0;
     }
 
-    #rowsCopy { /* 入力用行は削除したためコピー用のみ */
+    #rowsCopy { 
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
@@ -345,21 +329,8 @@
       justify-content:center;
       font-weight: 900;
       color: var(--colaBrown);
+      font-size: 13px; /* 少し大きめに調整 */
     }
-    .numGhost{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 1000;
-      font-size: 22px; 
-      letter-spacing: -1px;
-      opacity: 1;
-      pointer-events:none;
-      transform: translateY(1px);
-    }
-    .numFront{ position:relative; z-index:2; font-size: 12px; opacity: .9; }
 
     .tapCell{
       padding: 6px 8px; 
@@ -393,7 +364,7 @@
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(40px + env(safe-area-inset-bottom)); /* 少し下げました */
+      bottom: calc(40px + env(safe-area-inset-bottom));
       background: var(--colaDark);
       color:#fff;
       padding: 8px 16px;
@@ -452,7 +423,7 @@
                 <div class="hTitle">入力</div>
                 <input type="text" id="copyTabName" class="titleInput" placeholder="ここに名前を入力">
             </div>
-            <button class="btn danger-text" id="btnDeleteCopied">完了分削除</button>
+            <button class="btn danger" id="btnDeleteCopied" style="font-size: 11px; padding: 4px 8px; border-radius:8px;">完了分削除</button>
         </div>
 
         <div class="paste-group">
@@ -521,14 +492,10 @@
       showToast._t = setTimeout(()=>toast.classList.remove("show"), 900);
     }
 
-    function clampRows(){}
-
     function ensureRow(i){
       while(rows.length <= i){
         rows.push({
           id:"", pin:"",
-          editCount:0,
-          lastCountedId:"",
           copiedId:false,
           copiedPin:false
         });
@@ -570,8 +537,7 @@
         const n = idx + 1;
         const id = r.id ?? "";
         const pin = r.pin ?? "";
-        const c = r.editCount ?? 0;
-        return `${n}\t${id}\t${pin}\t${c}`;
+        return `${n}\t${id}\t${pin}\t0`;
       }).join("\n");
     }
 
@@ -602,12 +568,6 @@
       el.classList.add("flash");
       clearTimeout(el._flashT);
       el._flashT = setTimeout(()=>el.classList.remove("flash"), 520);
-    }
-
-    function colorForCount(n){
-      const hue = (n * 37) % 360;
-      const a = getComputedStyle(document.documentElement).getPropertyValue("--ghostBaseAlpha").trim() || "0.30";
-      return `hsla(${hue}, 70%, 45%, ${a})`;
     }
 
     function findInsertStart(){
@@ -683,7 +643,7 @@
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
         rowEl.innerHTML = `
-          <div class="numCell"><div class="numGhost" style="color:${colorForCount(0)}">0</div><div class="numFront">-</div></div>
+          <div class="numCell">-</div>
           <div class="tapCell" style="color:#a0a7ba;">（データなし）</div>
           <div class="tapCell"></div>
         `;
@@ -697,20 +657,10 @@
         const rowEl = document.createElement("div");
         rowEl.className = "gridRow";
 
+        // ★変更：背景のカウントアップ処理をなくし、シンプルな数字に変更
         const num = document.createElement("div");
         num.className = "numCell";
-
-        const ghost = document.createElement("div");
-        ghost.className = "numGhost";
-        ghost.textContent = String(r.editCount ?? 0);
-        ghost.style.color = colorForCount(r.editCount ?? 0);
-
-        const front = document.createElement("div");
-        front.className = "numFront";
-        front.textContent = String(i+1);
-
-        num.appendChild(ghost);
-        num.appendChild(front);
+        num.textContent = String(i+1);
 
         const idCell = document.createElement("div");
         idCell.className = "tapCell";
@@ -842,19 +792,13 @@
 
         rows[target].copiedId = false;
         rows[target].copiedPin = false;
-
-        if((rows[target].lastCountedId ?? "") === ""){
-          rows[target].lastCountedId = rows[target].id;
-        }
       }
 
-      clampRows();
       snapshot();
       renderAll();
       
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
       
-      // ★追加：貼り付け成功後、テキストエリアを空にする
       pasteArea.value = "";
       showToast(`${uniqueItems.length}件 追加・保存しました`);
     }
